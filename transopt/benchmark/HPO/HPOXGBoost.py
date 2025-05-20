@@ -18,7 +18,7 @@ from transopt.benchmark.problem_base.non_tab_problem import NonTabularProblem
 from transopt.space.search_space import SearchSpace
 from transopt.space.fidelity_space import FidelitySpace
 
-from transopt.optimizer.sampler.random import RandomSampler
+from transopt.optimizer.initialization.random import RandomSampler
 
 os.environ['OMP_NUM_THREADS'] = "1"
 logger = logging.getLogger('XGBBenchmark')

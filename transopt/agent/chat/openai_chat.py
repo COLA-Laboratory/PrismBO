@@ -379,7 +379,7 @@ class OpenAIChat:
         import transopt.optimizer.model
         import transopt.optimizer.pretrain
         import transopt.optimizer.refiner
-        import transopt.optimizer.sampler
+        import transopt.optimizer.initialization
 
     def get_all_problems(self):
         tasks_info = []

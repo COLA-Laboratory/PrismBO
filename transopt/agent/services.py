@@ -5,6 +5,7 @@ from multiprocessing import Manager, Process
 
 import numpy as np
 
+
 from transopt.agent.chat.openai_chat import OpenAIChat
 from transopt.agent.config import ChatbotConfig, Configer
 from transopt.agent.registry import *
@@ -59,7 +60,7 @@ class Services:
         import transopt.optimizer.normalizer
         import transopt.optimizer.pretrain
         import transopt.optimizer.refiner
-        import transopt.optimizer.sampler
+        import transopt.optimizer.initialization
         import transopt.optimizer.selector
         
         
@@ -432,29 +433,30 @@ class Services:
                 
                 self.data_manager.create_dataset(dataset_name, dataset_info, overwrite=True)
                 self.update_process_info(pid, {'dataset_name': dataset_name, 'task': task_set.get_curname(), 'budget': task_set.get_cur_budget()})
-
+                
                 optimizer.link_task(task_name=task_set.get_curname(), search_space=search_space)
-                    
-                metadata, metadata_info = self.get_metadata('SearchSpace')
-                autoselect = self.get_autoselect('SearchSpace')
-                if autoselect:
-                    metadata, metadata_info = self.auto_get_data('SearchSpace')
-                optimizer.search_space_refine(metadata, metadata_info)
-                    
+
+                #step1: initialization
                 metadata, metadata_info = self.get_metadata('Initialization')
                 autoselect = self.get_autoselect('Initialization')
                 if autoselect:
                     metadata, metadata_info = self.auto_get_data('Initialization')
                 samples = optimizer.sample_initial_set(metadata, metadata_info)
                 
-                
-                parameters = [search_space.map_to_design_space(sample) for sample in samples]
+                parameters = [optimizer.search_space.map_to_design_space(sample) for sample in samples]
                 observations = task_set.f(parameters)
                 self.save_data(dataset_name, parameters, observations, self.process_info[pid]['iteration'])
-                    
                 optimizer.observe(samples, observations)
+
+                #step2: search space prune
+                metadata, metadata_info = self.get_metadata('SearchSpace')
+                autoselect = self.get_autoselect('SearchSpace')
+                if autoselect:
+                    metadata, metadata_info = self.auto_get_data('SearchSpace')
+                optimizer.search_space_refine(optimizer.search_space, metadata, metadata_info)
+                
                     
-                # Pretrain
+                #step3: pretrain
                 metadata, metadata_info = self.get_metadata('Pretrain')
                 autoselect = self.get_autoselect('Pretrain')
                 if autoselect:
@@ -474,7 +476,7 @@ class Services:
                 while (task_set.get_rest_budget()):
                     optimizer.fit()
                     suggested_samples = optimizer.suggest()
-                    parameters = [search_space.map_to_design_space(sample) for sample in suggested_samples]
+                    parameters = [optimizer.search_space.map_to_design_space(sample) for sample in suggested_samples]
                     observations = task_set.f(parameters)
                     if observations is None:
                         break
@@ -486,7 +488,7 @@ class Services:
                     self.update_process_info(pid, {'progress': 100 * (task_set.get_cur_budget() - task_set.get_rest_budget()) / task_set.get_cur_budget()})
                     logger.info(f"PID {pid}: Seed {seed}, Task {task_set.get_curname()}, Iteration {self.process_info[pid]['iteration']}")
                 task_set.roll()
-                optimizer.meta_observe({'X':optimizer._X, 'Y':optimizer._Y}, search_space)
+                optimizer.meta_observe({'X':optimizer._X, 'Y':optimizer._Y}, optimizer.search_space)
         except Exception as e:
             logger.error(f"Error in process {pid}: {str(e)}")
             raise e

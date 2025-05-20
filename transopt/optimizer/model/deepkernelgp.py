@@ -102,8 +102,8 @@ class DeepKernelGP(nn.Module):
 
         if len(config) == 0:
             self.config = {"kernel": "matern", 'ard': False, "nu": 2.5, 'hidden_size': [32,32,32,32], 'n_inner_steps': 1,
-                           'test_batch_size':1, 'batch_size':1, 'seed':0, 'eval_batch_size':1000, 'verbose':True, 'loss_tol':0.0001,
-                           'max_patience':16, 'lr':0.001, 'epochs':100, 'load_model': False, 'checkpoint_path': './external/model/FSBO/Seed_0_1'}
+                           'test_batch_size':64, 'batch_size':64, 'seed':0, 'eval_batch_size':100, 'verbose':True, 'loss_tol':0.0001,
+                           'max_patience':16, 'lr':0.001, 'epochs':100, 'load_model': True, 'checkpoint_path': './external/model/FSBO/model.pth'}
         else:
             self.config = config
         torch.manual_seed(self.config['seed'])
@@ -114,12 +114,17 @@ class DeepKernelGP(nn.Module):
         self.max_patience = self.config['max_patience']
         self.lr  = self.config['lr']
         self.load_model = self.config['load_model']
-        self.checkpoint = self.config['checkpoint_path']
         
         self.epochs = self.config['epochs']
         self.verbose = self.config['verbose']
         self.loss_tol = self.config['loss_tol']
         self.eval_batch_size = self.config['eval_batch_size']
+        
+        self.checkpoint = self.config['checkpoint_path']
+
+        
+        
+        
         self.has_model = False
 
 
@@ -142,17 +147,25 @@ class DeepKernelGP(nn.Module):
             optimize: bool = False,):
 
         self.X_obs, self.y_obs = totorch(X, self.device), totorch(Y, self.device).reshape(-1)
-        
-        if self.load_model:
-            assert(self.checkpoint is not None)
-            print("Model_loaded")
-            self.load_checkpoint(os.path.join(self.checkpoint,"weights"))
-
         if self.has_model == False:
             self.input_size = X.shape[1]
             self.feature_extractor = MLP(self.input_size, hidden_size = self.hidden_size).to(self.device)
             self.get_model_likelihood_mll(1)
             self.has_model = True
+        
+        if self.load_model:
+            try:
+                if os.path.exists(self.checkpoint):
+                    print("Model loaded from checkpoint")
+                    self.load_checkpoint(os.path.join(self.checkpoint))
+                    self.has_model = True
+                elif os.path.exists('./external/model/FSBO/pretrain.pth'):
+                    print("Model loaded from pretrain")
+                    self.load_checkpoint('./external/model/FSBO/pretrain.pth')
+                    self.has_model = True
+            except:
+                self.has_model = False
+
         
         losses = [np.inf]
         best_loss = np.inf
@@ -180,6 +193,8 @@ class DeepKernelGP(nn.Module):
             if best_loss>losses[-1]:
                 best_loss = losses[-1]
                 weights = copy.deepcopy(self.state_dict())
+            else:
+                patience+=1
             if np.allclose(losses[-1],losses[-2],atol=self.loss_tol):
                 patience+=1
             else:
@@ -224,3 +239,7 @@ class DeepKernelGP(nn.Module):
 
     def get_fmin(self):
         return np.min(self.y_obs.detach().to("cpu").numpy())
+    
+    
+    def meta_update(self):
+        pass

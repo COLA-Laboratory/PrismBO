@@ -6,19 +6,22 @@
             "name": "Sphere",
             "num_objs": "1",
             "num_vars": "5",
-            "workloads": "1"
+            "workloads": "18"
         }
     ],
     "optimizer": {
         "SearchSpace": {
-            "type": null,
+            "type": "None",
             "auxiliaryData": [],
             "autoSelect": false
         },
         "Initialization": {
-            "type": "random",
+            "type": "MI",
             "InitNum": 11,
-            "auxiliaryData": [],
+            "auxiliaryData": [
+                "Sphere_w1_s42_1747229351",
+                "Sphere_w1_s2_1747229466"
+            ],
             "autoSelect": false
         },
         "AcquisitionFunction": {
@@ -27,15 +30,13 @@
             "autoSelect": false
         },
         "Pretrain": {
-            "type": null,
+            "type": "None",
             "auxiliaryData": [],
             "autoSelect": false
         },
         "Model": {
-            "type": "MTGP",
-            "auxiliaryData": [
-                "Sphere_w1_s42_1747229351"
-            ],
+            "type": "GP",
+            "auxiliaryData": [],
             "autoSelect": false
         },
         "Normalizer": {
@@ -44,9 +45,9 @@
             "autoSelect": false
         }
     },
-    "seeds": "0,1,2,3",
+    "seeds": "0",
     "remote": false,
     "server_url": "",
-    "experimentName": "Syhthetic Sphere 2",
-    "experimentDescription": "use multi-task GP to optimize 5 variables sphere problem"
+    "experimentName": "aaa",
+    "experimentDescription": "1231323"
 }

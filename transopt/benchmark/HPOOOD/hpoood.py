@@ -24,7 +24,7 @@ from typing import Dict, Union
 
 from transopt.agent.registry import problem_registry
 from transopt.benchmark.problem_base.non_tab_problem import NonTabularProblem
-from transopt.optimizer.sampler.random import RandomSampler
+from transopt.optimizer.initialization.random import RandomSampler
 from transopt.space.fidelity_space import FidelitySpace
 from transopt.space.search_space import SearchSpace
 from transopt.space.variable import *

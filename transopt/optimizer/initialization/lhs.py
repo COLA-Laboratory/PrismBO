@@ -1,7 +1,7 @@
 import numpy as np
 from scipy.stats import qmc
 
-from transopt.optimizer.sampler.sampler_base import Sampler
+from transopt.optimizer.initialization.initialization_base import Sampler
 from transopt.agent.registry import sampler_registry
 from transopt.space.search_space import SearchSpace
 

@@ -24,7 +24,7 @@ def ConstructOptimizer(optimizer_config: dict = None, seed: int = 0) -> BO:
     #     optimizer_config['SamplerInitNum'] = 11
     
     """Create the optimizer object."""
-    if optimizer_config['SearchSpace']['type'] == None:
+    if optimizer_config['SearchSpace']['type'] == None or optimizer_config['SearchSpace']['type'] == 'None':
         SpaceRefiner = None
     else:
         if 'Parameters' not in optimizer_config['SearchSpace']:
@@ -43,7 +43,7 @@ def ConstructOptimizer(optimizer_config: dict = None, seed: int = 0) -> BO:
         optimizer_config['Model']['Parameters'] = {}
     Model = model_registry[optimizer_config['Model']['type']](config = optimizer_config['Model']['Parameters'])
 
-    if optimizer_config['Pretrain']['type'] == None:
+    if optimizer_config['Pretrain']['type'] == None or optimizer_config['Pretrain']['type'] == 'None':
         Pretrain = None
     else:
         if 'Parameters' not in optimizer_config['Pretrain']:
@@ -52,7 +52,7 @@ def ConstructOptimizer(optimizer_config: dict = None, seed: int = 0) -> BO:
         
 
     
-    if optimizer_config['Normalizer']['type'] == None:
+    if optimizer_config['Normalizer']['type'] == None or optimizer_config['Normalizer']['type'] == 'None':
         Normalizer = None
     else:
         if 'Parameters' not in optimizer_config['Normalizer']:

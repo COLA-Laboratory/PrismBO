@@ -98,6 +98,7 @@ class SearchSpace:
                 )
                 
             self.ranges[name] = new_range
+            self._variables[name].update_range(new_range)
         else:
             raise ValueError(f"Variable '{name}' not found in search space.")
 

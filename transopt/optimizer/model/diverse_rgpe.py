@@ -48,7 +48,7 @@ def compute_ranking_loss(
     return rank_loss
 
 
-@model_registry.register('DRGPE')
+# @model_registry.register('DRGPE')
 class DRGPE(Model):
     def __init__(
             self,

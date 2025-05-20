@@ -13,5 +13,5 @@ from transopt.optimizer.model.diverse_rgpe import DRGPE
 from transopt.optimizer.model.diverse_mhgp import DMHGP
 
 from transopt.optimizer.model.mlp import MLP
-from transopt.optimizer.model.deepkernel import DeepKernelGP
+from transopt.optimizer.model.deepkernelgp import DeepKernelGP
 from transopt.optimizer.model.neuralprocess import NeuralProcess

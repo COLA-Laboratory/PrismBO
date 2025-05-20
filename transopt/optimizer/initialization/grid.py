@@ -1,6 +1,6 @@
 import numpy as np
-from sampler.sampler_base import Sampler
-from agent.registry import sampler_registry
+from transopt.optimizer.initialization.initialization_base import Sampler
+from transopt.agent.registry import sampler_registry
 
 # @sampler_registry.register("grid")
 class GridSampler(Sampler):

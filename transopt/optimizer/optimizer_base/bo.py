@@ -49,14 +49,16 @@ class BO(OptimizerBase):
         self.Normalizer.clear()
             
     
-    def search_space_refine(self, metadata = None, metadata_info = None):
+    def search_space_refine(self, search_space, metadata = None, metadata_info = None):
         if self.SpaceRefiner is not None:
-            self.search_space = self.SpaceRefiner.refine_space(self.search_space)
+            search_space = self.SpaceRefiner.prune(search_space, (self._X, self._Y), metadata, metadata_info)
+            self.search_space = search_space
             self.ACF.link_space(self.search_space)
-            self.evaluator = Sequential(self.ACF)
+            self.evaluator = Sequential(self.ACF, batch_size=1)
+
             
     def sample_initial_set(self, metadata = None, metadata_info = None):
-        return self.Sampler.sample(self.search_space, self.ini_num)
+        return self.Sampler.sample(self.search_space, self.ini_num, metadata, metadata_info)
     
     def pretrain(self, metadata = None, metadata_info = None):
         if self.Pretrain:

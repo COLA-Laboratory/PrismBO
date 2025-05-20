@@ -93,7 +93,7 @@ class DeepKernelPretrain(nn.Module):
         ## GP parameters
         if len(config) == 0:
             self.config = {"kernel": "matern", 'ard': False, "nu": 2.5, 'hidden_size': [32,32,32,32],
-                           'n_inner_steps': 1, 'test_batch_size':1, 'batch_size':1, 'seed':0, 'checkpoint_path':'./external/model/FSBO/'}
+                           'n_inner_steps': 1, 'test_batch_size':1, 'batch_size':64, 'seed':0, 'checkpoint_path':'./external/model/FSBO/'}
         else:
             self.config = config
             
@@ -111,6 +111,8 @@ class DeepKernelPretrain(nn.Module):
         self.valid_metrics = Metric(prefix="valid: ")
         self.mse        = nn.MSELoss()
         self.curr_valid_loss = np.inf
+        self.verbose = False
+        
         os.makedirs(self.checkpoint_path,exist_ok=True)
 
         print(self)
@@ -151,7 +153,7 @@ class DeepKernelPretrain(nn.Module):
         RandomTaskGenerator.shuffle(self.tasks)
 
 
-    def meta_train(self, epochs = 50000, lr = 0.0001):
+    def meta_train(self, epochs = 100, lr = 0.0001):
         self.get_model_likelihood_mll(self.batch_size)
         
         optimizer = torch.optim.Adam(self.parameters(), lr=lr)
@@ -160,7 +162,7 @@ class DeepKernelPretrain(nn.Module):
 
         for epoch in range(epochs):
             self.train_loop(epoch, optimizer, scheduler)
-        self.save_checkpoint(self.checkpoint_path + f'Seed_{self.Seed}_{len(self.tasks)}')
+        self.save_checkpoint(self.checkpoint_path + f'model.pth')
     def train_loop(self, epoch, optimizer, scheduler=None):
         self.epoch_end()
         assert(self.training)
@@ -172,6 +174,10 @@ class DeepKernelPretrain(nn.Module):
                 self.model.set_train_data(inputs=z, targets=labels, strict=False)
                 predictions = self.model(z)
                 loss = -self.mll(predictions, self.model.train_targets)
+
+                if self.verbose:
+                    print("Iter {iter}/{epoch} - Loss: {loss:.5f}   noise: {noise:.5f}".format(
+                        iter=_+1,epoch=epoch,loss=loss.item(),noise=self.likelihood.noise.item()))        
                 loss.backward()
                 optimizer.step()
                 mse = self.mse(predictions.mean, labels)

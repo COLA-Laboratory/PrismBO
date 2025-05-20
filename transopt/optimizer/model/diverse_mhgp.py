@@ -27,7 +27,7 @@ from sklearn.ensemble import RandomForestRegressor
 from transopt.optimizer.model.tpe import TPE
 from transopt.agent.registry import model_registry
 
-@model_registry.register("DMHGP")
+# @model_registry.register("DMHGP")
 class DMHGP(Model):
     """Stack of Gaussian processes.
 

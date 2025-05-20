@@ -104,12 +104,12 @@ class MHGP(Model):
     def meta_update(self):
         self._update_meta_data(self.target_model)
 
-    def _meta_fit_single_gp(
+    def _meta_fit_single_model(
         self,
         X : np.ndarray,
         Y : np.ndarray,
         optimize: bool,
-    ) -> GP:
+    ):
         """Train a new source GP on `data`.
 
         Args:
@@ -120,19 +120,28 @@ class MHGP(Model):
             The newly trained GP.
         """
         self.n_features = X.shape[1]
+
+        if self.model_name == 'GP':
+            kern = GPy.kern.RBF(self.n_features, ARD=False)
+            new_model = GPy.models.GPRegression(X, Y, kernel=kern)
+            try:
+                new_model.optimize_restarts(num_restarts=1, verbose=True, robust=True)
+            except np.linalg.linalg.LinAlgError as e:
+                print('Error: np.linalg.linalg.LinAlgError')
+
+        elif self.model_name == 'RF':
+            new_model = RandomForestRegressor(n_estimators=50, random_state=42, max_depth=5, min_samples_leaf=1, min_samples_split=2)
+            new_model.fit(X, Y.ravel())
+        elif self.model_name == 'TPE':
+            # Initialize TPE model
+            new_model = TPE()
+            # Fit TPE model with observed data
+            new_model.fit(X, Y.ravel())
+        else:
+            raise ValueError(f'Invalid model name: {self.model_name}')
         
-        residuals = self._compute_residuals(X, Y)
         
-        kernel = RBF(self.n_features, ARD=True)
-        new_gp = GP(
-            kernel, noise_variance=self._noise_variance
-        )
-        new_gp.fit(
-            X = X,
-            Y = residuals,
-            optimize = optimize,
-        )
-        return new_gp
+        return new_model
 
     def meta_fit(
         self,
@@ -157,7 +166,7 @@ class MHGP(Model):
             optimize_flag = [optimize_flag] * len(source_X)
 
         for i in range(len(source_X)):
-            new_gp = self._meta_fit_single_gp(
+            new_gp = self._meta_fit_single_model(
                 source_X[i],
                 source_Y[i],
                 optimize=optimize_flag[i],

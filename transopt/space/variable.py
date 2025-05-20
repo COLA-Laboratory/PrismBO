@@ -29,6 +29,9 @@ class Continuous(Variable):
     @property
     def search_space_range(self):
         return self.range
+    
+    def update_range(self, new_range):
+        self.range = new_range
 
     def map2design(self, value):
         return float(value)  # Ensure it remains a float
