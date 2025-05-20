@@ -16,16 +16,17 @@
             "autoSelect": false
         },
         "Initialization": {
-            "type": "MI",
+            "type": "random",
             "InitNum": 11,
             "auxiliaryData": [
+                "Sphere_w1_s3_1747470543",
                 "Sphere_w1_s42_1747229351",
                 "Sphere_w1_s2_1747229466"
             ],
             "autoSelect": false
         },
         "AcquisitionFunction": {
-            "type": "EI",
+            "type": "TAF",
             "auxiliaryData": [],
             "autoSelect": false
         },
@@ -48,6 +49,6 @@
     "seeds": "0",
     "remote": false,
     "server_url": "",
-    "experimentName": "aaa",
-    "experimentDescription": "1231323"
+    "experimentName": "ali",
+    "experimentDescription": "12312312"
 }

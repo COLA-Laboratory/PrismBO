@@ -1,0 +1,1 @@
+from prismbo.benchmark.HPOB.hpob import HPOB
