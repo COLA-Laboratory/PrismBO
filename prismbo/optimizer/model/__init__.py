@@ -15,3 +15,4 @@ from prismbo.optimizer.model.diverse_mhgp import DMHGP
 from prismbo.optimizer.model.mlp import MLP
 from prismbo.optimizer.model.deepkernelgp import DeepKernelGP
 from prismbo.optimizer.model.neuralprocess import NeuralProcess
+from prismbo.optimizer.model.hypergp import HyperGP

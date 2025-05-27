@@ -37,6 +37,17 @@ class Services:
         self._initialize_modules()
         self.process_info = Manager().dict()
         self.lock = Manager().Lock()
+        
+        # Add configuration for multiprocessing
+        self.use_multiprocessing = True  # Default to True for backward compatibility
+
+    def set_multiprocessing(self, use_mp: bool):
+        """Set whether to use multiprocessing for optimization.
+        
+        Args:
+            use_mp (bool): If True, use multiprocessing; if False, use single process.
+        """
+        self.use_multiprocessing = use_mp
 
     def chat(self, user_input):
         response_content = self.openai_chat.get_response(user_input)
@@ -401,18 +412,25 @@ class Services:
             raise ValueError("Invalid dataset name")
 
     def run_optimize(self):
-        # Create a separate process for each seed
-        process_list = []
         configurations = self.configer.get_configuration()
         seeds = configurations['seeds'].split(',')
         seeds = [int(seed) for seed in seeds]
-        for seed in seeds:
-            p = Process(target=self._run_optimize_process, args=(int(seed), configurations))
-            process_list.append(p)
-            p.start()
+        self.use_multiprocessing = False
         
-        for p in process_list:
-            p.join()
+        if self.use_multiprocessing:
+            # Create a separate process for each seed
+            process_list = []
+            for seed in seeds:
+                p = Process(target=self._run_optimize_process, args=(int(seed), configurations))
+                process_list.append(p)
+                p.start()
+            
+            for p in process_list:
+                p.join()
+        else:
+            # Sequential execution
+            for seed in seeds:
+                self._run_optimize_process(int(seed), configurations)
     
     def _run_optimize_process(self, seed, configurations):
         # Each process constructs its own DataManager
@@ -455,7 +473,6 @@ class Services:
                     metadata, metadata_info = self.auto_get_data('SearchSpace')
                 optimizer.search_space_refine(optimizer.search_space, metadata, metadata_info)
                 
-                    
                 #step3: pretrain
                 metadata, metadata_info = self.get_metadata('Pretrain')
                 autoselect = self.get_autoselect('Pretrain')
@@ -463,7 +480,7 @@ class Services:
                     metadata, metadata_info = self.auto_get_data('Pretrain')
                 optimizer.pretrain(metadata, metadata_info)
                 
-                
+                #step4: meta-fit
                 metadata, metadata_info = self.get_metadata('Model')
                 autoselect = self.get_autoselect('Model')
                 if autoselect:
@@ -472,7 +489,14 @@ class Services:
                 
                 cur_iter = 0
                 self.update_process_info(pid, {'iteration': cur_iter + 1})
-            
+                
+                #step5: Acquisition Function
+                metadata, metadata_info = self.get_metadata('AcquisitionFunction')
+                autoselect = self.get_autoselect('AcquisitionFunction')
+                if autoselect:
+                    metadata, metadata_info = self.auto_get_data('AcquisitionFunction')
+                optimizer.ACF_meta(metadata, metadata_info)
+                
                 while (task_set.get_rest_budget()):
                     optimizer.fit()
                     suggested_samples = optimizer.suggest()

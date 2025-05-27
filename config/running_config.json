@@ -1,7 +1,7 @@
 {
     "tasks": [
         {
-            "budget": "50",
+            "budget": "20",
             "budget_type": "function evaluations",
             "name": "Sphere",
             "num_objs": "1",
@@ -18,15 +18,11 @@
         "Initialization": {
             "type": "random",
             "InitNum": 11,
-            "auxiliaryData": [
-                "Sphere_w1_s3_1747470543",
-                "Sphere_w1_s42_1747229351",
-                "Sphere_w1_s2_1747229466"
-            ],
+            "auxiliaryData": [],
             "autoSelect": false
         },
         "AcquisitionFunction": {
-            "type": "TAF",
+            "type": "EI",
             "auxiliaryData": [],
             "autoSelect": false
         },
@@ -36,8 +32,12 @@
             "autoSelect": false
         },
         "Model": {
-            "type": "GP",
-            "auxiliaryData": [],
+            "type": "HyperGP",
+            "auxiliaryData": [
+                "Sphere_w1_s42_1747229351",
+                "Sphere_w1_s2_1747229466",
+                "Sphere_w1_s1_1747290841"
+            ],
             "autoSelect": false
         },
         "Normalizer": {
@@ -49,6 +49,6 @@
     "seeds": "0",
     "remote": false,
     "server_url": "",
-    "experimentName": "ali",
-    "experimentDescription": "12312312"
+    "experimentName": "",
+    "experimentDescription": ""
 }

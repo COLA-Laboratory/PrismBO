@@ -26,7 +26,6 @@ demo/
 .installed.cfg
 *.egg
 *.csv
-*.png
 *.zip
 #*.json
 *.jsonl

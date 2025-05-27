@@ -225,7 +225,9 @@ def create_app():
             logger.error(f"Error in searching dataset: {e}")
             return jsonify({"error": str(e)}), 500
     
-        services.run_optimize()  # Handle process creation within run_optimize
+        # 使用单进程执行
+        services.set_multiprocessing(False)
+        services.run_optimize()
         
         return jsonify({"isSucceed": True}), 200
 

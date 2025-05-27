@@ -66,6 +66,16 @@ class BO(OptimizerBase):
             self.Pretrain.meta_train()
     
     
+    def ACF_meta(self, metadata = None, metadata_info = None):
+        datasets = []
+        for key, v in metadata.items():
+            variables_order = [i['name'] for i in metadata_info[key]['variables']]
+            objective_name = metadata_info[key]['objectives'][0]['name']
+            dataset_X = np.array([[point[name] for name in variables_order] for point in v])
+            dataset_Y = np.array([point[objective_name] for point in v])
+            datasets.append({'X': dataset_X, 'Y': dataset_Y})
+        self.ACF.link_data(datasets)
+    
     def meta_fit(self, metadata = None, metadata_info = None):
         if metadata:
             source_X = []

@@ -32,6 +32,9 @@ class AcquisitionBase(object):
             self.cost_withGradients = constant_cost_withGradients
         else:
             self.cost_withGradients = cost_withGradients
+            
+        self.metadata = None
+        self.metadata_info = None
 
     @staticmethod
     def fromDict(model, space, optimizer, cost_withGradients, config):
@@ -56,7 +59,8 @@ class AcquisitionBase(object):
                 var_dic['type'] = 'discrete'
 
             opt_space.append(var_dic.copy())
-            
+        
+        self._space_prismbo = space
         self.space = Design_space(opt_space)
         self.optimizer = AcquisitionOptimizer(self.space, self.optimizer_name)
     
@@ -99,3 +103,7 @@ class AcquisitionBase(object):
     def _compute_acq_withGradients(self, x):
 
         raise NotImplementedError('')
+    
+    def link_data(self, metadata, metadata_info = None):
+        self.metadata = metadata
+        self.metadata_info = metadata_info

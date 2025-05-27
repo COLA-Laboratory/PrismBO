@@ -48,7 +48,7 @@ Please install these prerequisites if they are not already installed on your sys
 
 1. Clone the repository:
    ```shell
-   $ git clone https://github.com/maopl/TransOpt.git
+   $ git clone https://github.com/COLA-Laboratory/PrismBO
    ```
 
 2. Install the required dependencies:
