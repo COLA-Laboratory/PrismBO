@@ -1,4 +1,5 @@
 from prismbo.optimizer.pretrain.deepkernelpretrain import DeepKernelPretrain
 from prismbo.optimizer.pretrain.hypergppretrain import HyperGPretrain
-from prismbo.optimizer.pretrain.neuralprocesspretrain import NeuralProcessPretrain
+from prismbo.optimizer.pretrain.transformerpretrain import TransformerPretrain
 from prismbo.optimizer.pretrain.hypergppretrain import HyperGPretrain
+from prismbo.optimizer.pretrain.fsafpretrain import FSAFPretrain

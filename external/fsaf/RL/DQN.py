@@ -28,11 +28,11 @@ import copy
 import json
 from datetime import datetime
 import collections
-from fsaf.RL.batchrecorder import BatchRecorder
-from fsaf.RL.util import get_best_iter_idx
-from fsaf.policies.policies import NeuralAF
+from external.fsaf.RL.batchrecorder import BatchRecorder
+from external.fsaf.RL.util import get_best_iter_idx
+from external.fsaf.policies.policies import NeuralAF
 from torch.nn.utils import parameters_to_vector
-from fsaf.RL.memory import CustomPrioritizedReplayBuffer
+from external.fsaf.RL.memory import CustomPrioritizedReplayBuffer
 from torch.distributions import Categorical
 
 class DQN:

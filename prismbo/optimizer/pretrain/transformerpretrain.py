@@ -15,31 +15,31 @@ from torch.cuda.amp import autocast, GradScaler
 from prismbo.agent.registry import pretrain_registry
 from prismbo.optimizer.pretrain.pretrain_base import PretrainBase
 from torch import nn
-from prismbo.optimizer.model.pfns4bo.train import train
-from prismbo.optimizer.model.pfns4bo.priors.utils import get_batch_to_dataloader
-from prismbo.optimizer.model.pfns4bo import encoders
-from prismbo.optimizer.model.pfns4bo import utils
-from prismbo.optimizer.model.pfns4bo import bar_distribution
+from external.pfns4bo.train import train
+from external.pfns4bo.priors.utils import get_batch_to_dataloader
+from external.pfns4bo import encoders
+from external.pfns4bo import utils
+from external.pfns4bo import bar_distribution
 
-from prismbo.optimizer.model.pfns4bo import priors 
-from prismbo.optimizer.model.pfns4bo.priors import Batch
+from external.pfns4bo import priors 
+from external.pfns4bo.priors import Batch
 
 
 
-@pretrain_registry.register("NeuralProcessPretrain")
-class NeuralProcessPretrain(PretrainBase):
+@pretrain_registry.register("TransformerPretrain")
+class TransformerPretrain(PretrainBase):
     def __init__(self, config = {}) -> None:
         super().__init__(config)
         self.train_data = None
 
         self.config_heboplus = {
-            'priordataloader_class_or_get_batch': priors.get_batch_to_dataloader(
+            'priordataloader_class': priors.get_batch_to_dataloader(
                 priors.get_batch_sequence(
                     priors.hebo_prior.get_batch,
                     priors.utils.sample_num_feaetures_get_batch,
                 )
             ),
-            'encoder_generator': encoders.get_normalized_uniform_encoder(encoders.get_variable_num_features_encoder(encoders.Linear)),
+            'encoder_generator': encoders.get_normalized_uniform_encoder(encoders. get_variable_num_features_encoder(encoders.Linear)),
             'emsize': 512,
             'nhead': 4,
             'warmup_epochs': 5,
@@ -47,19 +47,19 @@ class NeuralProcessPretrain(PretrainBase):
             'batch_size': 128,
             'scheduler': utils.get_cosine_schedule_with_warmup,
             'extra_prior_kwargs_dict': {'num_features': 18,
-            'hyperparameters': {
-            'lengthscale_concentration': 1.2106559584074301,
-            'lengthscale_rate': 1.5212245992840594,
-            'outputscale_concentration': 0.8452312502679863,
-            'outputscale_rate': 0.3993553245745406,
-            'add_linear_kernel': False,
-            'power_normalization': False,
-            'hebo_warping': False,
-            'unused_feature_likelihood': 0.3,
-            'observation_noise': True}},
+                        'hyperparameters': {
+                        'lengthscale_concentration': 1.2106559584074301,
+                        'lengthscale_rate': 1.5212245992840594,
+                        'outputscale_concentration': 0.8452312502679863,
+                        'outputscale_rate': 0.3993553245745406,
+                        'add_linear_kernel': False,
+                        'power_normalization': False,
+                        'hebo_warping': False,
+                        'unused_feature_likelihood': 0.3,
+                        'observation_noise': True}},
             'epochs': 50,
             'lr': 0.0001,
-            # 'bptt': 60,
+            'bptt': 60,
             'single_eval_pos_gen': utils.get_uniform_single_eval_pos_sampler(50, min_len=1), #<function utils.get_uniform_single_eval_pos_sampler.<locals>.<lambda>()>,
             'aggregate_k_gradients': 2,
             'nhid': 1024,
@@ -153,12 +153,35 @@ class NeuralProcessPretrain(PretrainBase):
     def get_ys(self, config, device='cuda:0'):
         bs = 128
         all_targets = []
-        for num_hps in [2,8,12]: # a few different samples in case the number of features makes a difference in y dist
-            b = config['priordataloader_class_or_get_batch'].get_batch_method(bs,1000,num_hps,epoch=0,device=device,
+        for num_hps in [2,8,12]:
+            # a few different samples in case the number of features makes a difference in y dist
+            b = config['priordataloader_class'].get_batch_method(bs,1000,num_hps,epoch=0,device=device,
                                                                 hyperparameters=
                                                                 {**config['extra_prior_kwargs_dict']['hyperparameters'],
                                                                 'num_hyperparameter_samples_per_batch': -1,})
+
+
+
+
+            # dummy_dl = config['priordataloader_class'](
+            #     num_steps=1024,
+            #     batch_size=bs,
+            #     seq_len_maximum=10,  # 给个默认值
+            #     device=device,
+            #     **config.get('extra_prior_kwargs_dict', {})
+            # )
+            # b = dummy_dl.get_batch_method(bs,1000,num_hps,epoch=0,device=device,
+            #                                                     hyperparameters=
+            #                                                     {**config['extra_prior_kwargs_dict']['hyperparameters'],
+            #                                                     'num_hyperparameter_samples_per_batch': -1,})
+            
+            
+            
             all_targets.append(b.target_y.flatten())
+            
+            
+            
+            
         return torch.cat(all_targets,0)
 
     def add_criterion(self, config, device='cuda:0'):
@@ -232,7 +255,7 @@ class NeuralProcessPretrain(PretrainBase):
     
     
     def meta_train(self):
-        train(**self.add_criterion(self.config_heboplus,device='cpu:0'))
+        train(**self.add_criterion(self.config_heboplus,device='cuda:0'))
         
         
 

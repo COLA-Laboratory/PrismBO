@@ -3,7 +3,7 @@
 Command Line
 ===============================
 
-TransOPT provides a command-line interface (CLI) that allows users to define and run optimization tasks directly from the terminal. This is facilitated by the `run_cli.py` script, which supports a wide range of customizable parameters.
+PrismBO provides a command-line interface (CLI) that allows users to define and run optimization tasks directly from the terminal. This is facilitated by the `run_cli.py` script, which supports a wide range of customizable parameters.
 
 Running the Command-Line Interface
 ----------------------------------
@@ -12,9 +12,9 @@ To run the `run_cli.py` script, navigate to the directory containing the script 
 
 .. code-block:: bash
 
-   python transopt/agent/run_cli.py [OPTIONS]
+   python PrismBO/agent/run_cli.py [OPTIONS]
 
-Where `[OPTIONS]` are the command-line arguments you can specify to customize the behavior of TransOPT.
+Where `[OPTIONS]` are the command-line arguments you can specify to customize the behavior of PrismBO.
 
 I. Command-Line Arguments
 ^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -70,23 +70,23 @@ Below are some example commands demonstrating how to use the CLI to run differen
 
 .. code-block:: bash
 
-   python transopt/agent/run_cli.py -n MyTask -v 3 -o 1 -b 200
+   python prismbo/agent/run_cli.py -n MyTask -v 3 -o 1 -b 200
 
 **Example 2: Running a task with a specific model and acquisition function**
 
 .. code-block:: bash
 
-   python transopt/agent/run_cli.py -n MyTask -v 3 -o 2 -m RF -acf UCB -b 300
+   python prismbo/agent/run_cli.py -n MyTask -v 3 -o 2 -m RF -acf UCB -b 300
 
 **Example 3: Using custom parameters for the space refiner and sampler**
 
 .. code-block:: bash
 
-   python transopt/agent/run_cli.py -n MyTask -sr "Prune"  -sp "lhs" -spi 30 -b 300
+   python prismbo/agent/run_cli.py -n MyTask -sr "Prune"  -sp "lhs" -spi 30 -b 300
 
 III. Additional Notes
 ^^^^^^^^^^^^^^^^^^^^^
 - The **random seed** is particularly important for ensuring that the results are reproducible. Make sure to specify the `--seeds` option if you want to run experiments that can be exactly replicated.
-- TransOPT's CLI is highly flexible, allowing you to tailor the optimization process to your specific needs by adjusting the parameters and options provided.
+- PrismBO's CLI is highly flexible, allowing you to tailor the optimization process to your specific needs by adjusting the parameters and options provided.
 
-By following the instructions above, you can effectively use the TransOPT CLI to run and manage your optimization tasks.
+By following the instructions above, you can effectively use the PrismBO CLI to run and manage your optimization tasks.

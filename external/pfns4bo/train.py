@@ -56,7 +56,7 @@ def train(priordataloader_class_or_get_batch: prior.PriorDataLoader | callable, 
 
     test_batch: prior.Batch = dl.get_test_batch()
     style_def = None
-    
+
     print(f'Style definition of first 3 examples: {style_def[:3] if style_def is not None else None}')
     style_encoder = style_encoder_generator(style_def.shape[1], emsize) if (style_def is not None) else None
     pos_encoder = (pos_encoder_generator or positional_encodings.NoPositionalEncoding)(emsize, seq_len * 2)

@@ -16,7 +16,7 @@ import scipy.stats as stats
 import math
 
 def get_batch_to_dataloader(get_batch_method_):
-    #DL = partial(DL, get_batch_method=get_batch_method_)
+    # DL = partial(DL, get_batch_method=get_batch_method_)
     class DL(PriorDataLoader):
         get_batch_method = get_batch_method_
 
@@ -28,9 +28,9 @@ def get_batch_to_dataloader(get_batch_method_):
             self.num_steps = num_steps
             self.num_features = get_batch_kwargs.get('num_features') or self.num_features
             self.epoch_count = 0
-            self.single_eval_pos = None
-            self.mean_prediction = None
-            self.style = None   
+            # self.single_eval_pos = None
+            # self.mean_prediction = None
+            # self.style = None   
             print('DataLoader.__dict__', self.__dict__)
 
         @staticmethod
@@ -44,6 +44,7 @@ def get_batch_to_dataloader(get_batch_method_):
                     / math.pow(kwargs['seq_len'], kwargs['dynamic_batch_size'])
                 )
             batch: Batch = get_batch_method_(*args, **kwargs)
+            print("batch type:", type(batch))
             if batch.single_eval_pos is None:
                 batch.single_eval_pos = kwargs['single_eval_pos']
             return batch

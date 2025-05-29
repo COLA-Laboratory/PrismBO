@@ -5,12 +5,12 @@ This
 .. admonition:: Overview
    :class: info
 
-   - :ref:`Register <registering-new-problem>`: How to register a new optimization problem to :ref:`TransOPT <home>`
-   - :ref:`Synthetic Problem <synthetic-problems>`: The list of the synthetic problems available in :ref:`TransOPT <home>`
-   - :ref:`Hyperparameter Optimization Problem <hpo-problems>`: The list of the HPO problems available in :ref:`TransOPT <home>`
-   - :ref:`Configurable Software Optimization Problem <cso-problems>`: The list of the configurable software optimization problems available in :ref:`TransOPT <home>`
-   - :ref:`RNA Inverse Design Problem <rna-problems>`: The list of the RNA Inverse design problems available in :ref:`TransOPT <home>`
-   - :ref:`Protein Inverse Folding Problem <pif-problems>`: The list of the protein inverse folding problems available in :ref:`TransOPT <home>`
+   - :ref:`Register <registering-new-problem>`: How to register a new optimization problem to :ref:`PrismBO <home>`
+   - :ref:`Synthetic Problem <synthetic-problems>`: The list of the synthetic problems available in :ref:`PrismBO <home>`
+   - :ref:`Hyperparameter Optimization Problem <hpo-problems>`: The list of the HPO problems available in :ref:`PrismBO <home>`
+   - :ref:`Configurable Software Optimization Problem <cso-problems>`: The list of the configurable software optimization problems available in :ref:`PrismBO <home>`
+   - :ref:`RNA Inverse Design Problem <rna-problems>`: The list of the RNA Inverse design problems available in :ref:`PrismBO <home>`
+   - :ref:`Protein Inverse Folding Problem <pif-problems>`: The list of the protein inverse folding problems available in :ref:`PrismBO <home>`
    - :ref:`Parallelization <parallelization>`: How to parallelize function evaluations
 
 
@@ -20,15 +20,15 @@ This
 Registering a New Benchmark Problem
 -----------------------------------
 
-To register a new benchmark problem in the TransOPT framework, follow the steps below.
+To register a new benchmark problem in the PrismBO framework, follow the steps below.
 
 I. Import the Problem Registry
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-First, you need to import the `problem_registry` from the `transopt.agent.registry` module:
+First, you need to import the `problem_registry` from the `prismbo.agent.registry` module:
 
 .. code-block:: python
 
-    from transopt.agent.registry import problem_registry
+    from prismbo.agent.registry import problem_registry
 
 II. Define a New Problem Class
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -102,7 +102,7 @@ Here’s an example outline of the `sphere` class:
 
          return results
 
-By following these steps, you can successfully register a new benchmark problem in the TransOPT framework.
+By following these steps, you can successfully register a new benchmark problem in the PrismBO framework.
 
 .. _synthetic-problems:
 

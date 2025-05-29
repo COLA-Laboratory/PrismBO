@@ -54,8 +54,6 @@ class Services:
         return response_content
 
     def _initialize_modules(self):
-        # import transopt.benchmark.CPD
-        # import transopt.benchmark.CPD
         import prismbo.benchmark.RNAInverseDesign
         import prismbo.benchmark.HPOB
         import prismbo.benchmark.HPOOOD

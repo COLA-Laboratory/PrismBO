@@ -1,7 +1,7 @@
 Visualization
 ===============
 
-This section demonstrates various visualization techniques used in TransOPT.
+This section demonstrates various visualization techniques used in PrismBO.
 
 Data Filtering and Statistical Visualization
 --------------------------------------------
@@ -27,7 +27,7 @@ Key steps in the data filtering process:
 Visualization of Filtered Data
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-After filtering the data into groups, TransOPT provides two main types of visualizations to compare and analyze the results: trajectory plots and box plots.
+After filtering the data into groups, PrismBO provides two main types of visualizations to compare and analyze the results: trajectory plots and box plots.
 
 Trajectory Plot
 """""""""""""""
@@ -72,12 +72,12 @@ Key insights from the box plot:
 Analysis of Individual Datasets
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-TransOPT also provides tools for in-depth analysis of individual datasets. This section outlines the process and visualizations available for single dataset analysis.
+PrismBO also provides tools for in-depth analysis of individual datasets. This section outlines the process and visualizations available for single dataset analysis.
 
 1. Dataset Selection
 """"""""""""""""""""
 
-The first step is to select a specific dataset for analysis. Once selected, TransOPT generates a summary of the dataset's key information.
+The first step is to select a specific dataset for analysis. Once selected, PrismBO generates a summary of the dataset's key information.
 
 .. figure:: /_static/figures/visualization/choose.jpg
    :alt: Dataset Information Summary

@@ -374,7 +374,6 @@ class OpenAIChat:
     
     def _initialize_modules(self):
         import prismbo.benchmark.Synthetic
-        # import transopt.benchmark.CPD
         import prismbo.optimizer.acquisition_function
         import prismbo.optimizer.model
         import prismbo.optimizer.pretrain

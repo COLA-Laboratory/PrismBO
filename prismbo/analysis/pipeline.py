@@ -5,11 +5,6 @@ from prismbo.agent.registry import analysis_registry, comparison_registry
 from prismbo.analysis.plot import *
 from prismbo.analysis.statistics import *
 
-# PlotAnalysis import plot_registry
-# from transopt.ResultAnalysis.TableAnalysis import table_registry
-# from transopt.ResultAnalysis.TrackOptimization import track_registry
-# from transopt.ResultAnalysis.AnalysisBase import AnalysisBase
-# from transopt.ResultAnalysis.AnalysisReport import create_report
 
 
 def analysis(Exper_folder, datasets, data_manager, args):

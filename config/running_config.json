@@ -27,17 +27,17 @@
             "autoSelect": false
         },
         "Pretrain": {
-            "type": "None",
-            "auxiliaryData": [],
+            "type": "TransformerPretrain",
+            "auxiliaryData": [
+                "Sphere_w1_s2_1747229466",
+                "Sphere_w1_s42_1747229351",
+                "Sphere_w1_s1_1747290841"
+            ],
             "autoSelect": false
         },
         "Model": {
-            "type": "HyperGP",
-            "auxiliaryData": [
-                "Sphere_w1_s42_1747229351",
-                "Sphere_w1_s2_1747229466",
-                "Sphere_w1_s1_1747290841"
-            ],
+            "type": "GP",
+            "auxiliaryData": [],
             "autoSelect": false
         },
         "Normalizer": {

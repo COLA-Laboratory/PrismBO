@@ -1,4 +1,4 @@
-.. TransOPT documentation master file, created by
+.. PrismBO documentation master file, created by
    sphinx-quickstart on Mon Aug 19 16:00:09 2024.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
@@ -8,7 +8,7 @@
 
 TRANSOPT: Transfer Optimization System for Bayesian Optimization Using Transfer Learning
 ========================================================================================
-TransOPT is an open-source software platform designed to facilitate the design, benchmarking, and application of transfer learning for Bayesian optimization (TLBO) algorithms through a modular, data-centric framework.
+PrismBO is an open-source software platform designed to facilitate the design, benchmarking, and application of transfer learning for Bayesian optimization (TLBO) algorithms through a modular, data-centric framework.
 
 .. raw:: html
    :file: home/guide.html
@@ -16,7 +16,7 @@ TransOPT is an open-source software platform designed to facilitate the design, 
 
 Video Demonstration
 ********************************************************************************
-Watch the following video for a quick overview of TransOPT's capabilities:
+Watch the following video for a quick overview of PrismBO's capabilities:
 
 .. raw:: html
 
@@ -71,10 +71,10 @@ BibTex:
 
 .. code-block:: bibtex
 
-    @ARTICLE{TransOPT,
-      title = {{TransOPT}: Transfer Optimization System for Bayesian Optimization Using Transfer Learning},
+    @ARTICLE{PrismBO,
+      title = {{PrismBO}: Transfer Optimization System for Bayesian Optimization Using Transfer Learning},
       author = {Author Name and Collaborator Name},
-      url = {https://github.com/maopl/TransOPT},
+      url = {https://github.com/maopl/PrismBO},
       year = {2024}
     }
 

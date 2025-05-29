@@ -33,8 +33,8 @@ import copy
 import json
 from datetime import datetime
 import collections
-from fsaf.RL.ppo_batchrecorder import BatchRecorder, Transition
-from fsaf.policies.policies import iclr2020_NeuralAF
+from external.fsaf.RL.ppo_batchrecorder import BatchRecorder, Transition
+from external.fsaf.policies.policies import iclr2020_NeuralAF
 
 
 class PPO:
