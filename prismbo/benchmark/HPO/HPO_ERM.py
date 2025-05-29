@@ -127,9 +127,9 @@ class HPO_base(NonTabularProblem):
         
         base_dir = kwargs.get('base_dir', os.path.expanduser('~'))
         print(base_dir)
-        self.data_dir = os.path.join(base_dir, 'transopt_tmp/data/')
-        self.model_save_dir  = os.path.join(base_dir, f'transopt_tmp/output/models/{self.hpo_optimizer}_{self.algorithm_name}_{self.architecture}_{self.model_size}_{self.dataset_name}_{seed}/')
-        self.results_save_dir  = os.path.join(base_dir, f'transopt_tmp/output/results/{self.hpo_optimizer}_{self.algorithm_name}_{self.architecture}_{self.model_size}_{self.dataset_name}_{seed}/')
+        self.data_dir = os.path.join(base_dir, 'prismbo_tmp/data/')
+        self.model_save_dir  = os.path.join(base_dir, f'prismbo_tmp/output/models/{self.hpo_optimizer}_{self.algorithm_name}_{self.architecture}_{self.model_size}_{self.dataset_name}_{seed}/')
+        self.results_save_dir  = os.path.join(base_dir, f'prismbo_tmp/output/results/{self.hpo_optimizer}_{self.algorithm_name}_{self.architecture}_{self.model_size}_{self.dataset_name}_{seed}/')
         
         print(f"Selected algorithm: {self.algorithm_name}, dataset: {self.dataset_name}")
         print(f"Model architecture: {self.architecture}")

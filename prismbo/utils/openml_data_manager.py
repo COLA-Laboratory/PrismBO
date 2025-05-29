@@ -37,8 +37,8 @@ def _check_dir(path: Path):
     """ Check whether dir exists and if not create it"""
     Path(path).mkdir(exist_ok=True, parents=True)
 
-cache_dir = os.environ.get('OPENML_CACHE_HOME', '~/.cache/transopt')
-data_dir = os.environ.get('OPENML_DATA_HOME', '~/.local/share/transopt')
+cache_dir = os.environ.get('OPENML_CACHE_HOME', '~/.cache/prismbo')
+data_dir = os.environ.get('OPENML_DATA_HOME', '~/.local/share/prismbo')
 cache_dir = Path(cache_dir).expanduser().absolute()
 data_dir = Path(data_dir).expanduser().absolute()
 _check_dir(cache_dir)

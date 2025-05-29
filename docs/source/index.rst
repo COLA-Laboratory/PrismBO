@@ -6,7 +6,7 @@
 .. _home:
 
 
-TRANSOPT: Transfer Optimization System for Bayesian Optimization Using Transfer Learning
+PrismBO: A Data-Centric Benchmarking Platform for Composable Transfer Learning in Bayesian Optimization in Dynamic Environments
 ========================================================================================
 PrismBO is an open-source software platform designed to facilitate the design, benchmarking, and application of transfer learning for Bayesian optimization (TLBO) algorithms through a modular, data-centric framework.
 

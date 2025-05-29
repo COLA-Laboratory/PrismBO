@@ -101,7 +101,7 @@ Our docs walk you through using PrismBO, web UI and key API points. For an overv
 
 
 <p align="center">
-<img src="./docs/source/_static/figures/workflow.svg" width="95%">
+<img src="./docs/source/_static/figures/workflow_prismbo.svg" width="95%">
 </p>
 
 
@@ -131,9 +131,9 @@ If you find our work helpful to your research, please consider citing our:
 @article{PrismBO,
   title = {PrismBO: A Data-Centric Benchmarking Platform for Composable Transfer Learning in Bayesian Optimization in Dynamic Environments
 },
-  author = {Author Name and Collaborator Name},
-  url = {https://github.com/maopl/TransOPT},
-  year = {2024}
+  author = {Peili Mao and Ke Li},
+  url = {https://github.com/COLA-Laboratory/PrismBO/},
+  year = {2025}
 }
 ```
 

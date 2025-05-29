@@ -4,7 +4,7 @@ from pathlib import Path
 
 def get_library_path():
     home = Path.home()
-    library_dir_name = "transopt_files"
+    library_dir_name = "prismbo_files"
     library_path = home / library_dir_name
 
     if not library_path.exists():

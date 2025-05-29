@@ -124,7 +124,7 @@ class MultipleEnvironmentMNIST(MultipleDomainDataset):
         super().__init__()
         if root is None:
             user_home = os.path.expanduser('~')
-            root = os.path.join(user_home, 'transopt_tmp/data')
+            root = os.path.join(user_home, 'prismbo_tmp/data')
         
         original_dataset_tr = MNIST(root, train=True, download=True)
         original_dataset_te = MNIST(root, train=False, download=True)
@@ -257,7 +257,7 @@ class RobCifar10(Dataset):
         super().__init__()
         if root is None:        
             user_home = os.path.expanduser('~')
-            root = os.path.join(user_home, 'transopt_tmp/data')
+            root = os.path.join(user_home, 'prismbo_tmp/data')
 
         self.datasets = {}
         # Load original CIFAR-10 dataset
@@ -360,7 +360,7 @@ class RobCifar100(Dataset):
         super().__init__()
         if root is None:        
             user_home = os.path.expanduser('~')
-            root = os.path.join(user_home, 'transopt_tmp/data')
+            root = os.path.join(user_home, 'prismbo_tmp/data')
 
         self.datasets = {}
         # Load original CIFAR-100 dataset
@@ -433,7 +433,7 @@ class RobImageNet(Dataset):
         super().__init__()
         if root is None:
             user_home = os.path.expanduser('~')
-            root = os.path.join(user_home, 'transopt_tmp/data')
+            root = os.path.join(user_home, 'prismbo_tmp/data')
 
         self.datasets = {}
         self.corruptions = [

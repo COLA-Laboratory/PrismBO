@@ -290,7 +290,7 @@ def download_spawrious(data_dir, remove=True):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Download datasets')
-    parser.add_argument('--data_dir', type=str, default='/home/cola/transopt_files/data/')
+    parser.add_argument('--data_dir', type=str, default='/home/cola/prismbo_files/data/')
     args = parser.parse_args()
 
     # download_mnist(args.data_dir)

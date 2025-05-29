@@ -263,8 +263,6 @@ def create_app():
         user_input = data.get("action", "")
 
         task_data = services.get_configuration()
-        # with open('transopt/agent/page_service_data/configuration_info.json', 'r') as file:
-        #     data = json.load(file)
         return jsonify(task_data), 200
 
 

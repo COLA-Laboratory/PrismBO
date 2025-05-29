@@ -8,7 +8,7 @@ from prismbo.benchmark.HPO import algorithms
 from prismbo.benchmark.HPO import datasets
 
 # 定义读取模型的路径
-model_path = os.path.expanduser('~/transopt_tmp/output/models/ROBERM_RobCifar10_0/model.pkl')
+model_path = os.path.expanduser('~/prismbo_tmp/output/models/ROBERM_RobCifar10_0/model.pkl')
 algorithm_name = 'ROBERM'
 dataset_name = 'RobCifar10'
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")

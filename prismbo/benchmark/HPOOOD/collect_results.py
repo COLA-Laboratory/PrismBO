@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 
 
 
-out_put_dir = '/home/cola/transopt_files/output1/results'
+out_put_dir = '/home/cola/prismbo_files/output1/results'
 analysis_dir = './analysis_res/'
 
 

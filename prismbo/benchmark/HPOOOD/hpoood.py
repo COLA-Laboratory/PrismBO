@@ -121,8 +121,8 @@ class HPOOOD_base(NonTabularProblem):
         self.dataset_name = HPOOOD_base.DATASETS[workload]
         self.algorithm_name = algorithm
         self.test_envs = [0,1]
-        self.data_dir = '/home/cola/transopt_files/data/'
-        self.output_dir = f'/home/cola/transopt_files/output/'
+        self.data_dir = '/home/cola/prismbo_files/data/'
+        self.output_dir = f'/home/cola/prismbo_files/output/'
         self.holdout_fraction = 0.2
         self.validate_fraction = 0.1
         self.uda_holdout_fraction = 0.8

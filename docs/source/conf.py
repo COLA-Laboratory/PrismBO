@@ -17,7 +17,7 @@ SOURCE = os.path.dirname(os.path.realpath(__file__))
 
 sys.path.insert(0, SOURCE)
 
-project = 'TransOPT: Transfer Optimization System for Bayesian Optimization Using Transfer Learning'
+project = 'PrismBO: A Data-Centric Benchmarking Platform for Composable Transfer Learning in Bayesian Optimization in Dynamic Environments'
 copyright = '2024, Peili Mao'
 author = 'Peili Mao'
 release = '0.1.0'
@@ -50,7 +50,8 @@ exclude_patterns = []
 
 bibtex_bibfiles = ['usage/TOS.bib']
 
-html_logo = "_static//figures/transopt_logo.jpg"
+html_logo = "_static//figures/PrismBO.png"
+
 # html_favicon = '_static/favicon.ico'
 
 
