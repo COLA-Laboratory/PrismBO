@@ -11,23 +11,23 @@ import torch
 from torch.utils.data import DataLoader
 import matplotlib.pyplot as plt
 
-from prismbo.benchmark.HPO import datasets
+from prismbo.benchmark.hpo import datasets
 
-import prismbo.benchmark.HPO.misc as misc
+import prismbo.benchmark.hpo.misc as misc
 from prismbo.agent.registry import problem_registry
-from prismbo.benchmark.HPO.fast_data_loader import (FastDataLoader,
+from prismbo.benchmark.hpo.fast_data_loader import (FastDataLoader,
                                                      InfiniteDataLoader)
 from prismbo.benchmark.problem_base.non_tab_problem import NonTabularProblem
 from prismbo.space.fidelity_space import FidelitySpace
 from prismbo.space.search_space import SearchSpace
 from prismbo.space.variable import *
-from prismbo.benchmark.HPO import algorithms
-from prismbo.benchmark.HPO.hparams_registry import get_hparam_space, get_subpolicy_num
-from prismbo.benchmark.HPO.networks import SUPPORTED_ARCHITECTURES
-from prismbo.benchmark.HPO.augmentation import SamplerPolicy
+from prismbo.benchmark.hpo import algorithms
+from prismbo.benchmark.hpo.hparams_registry import get_hparam_space, get_subpolicy_num
+from prismbo.benchmark.hpo.networks import SUPPORTED_ARCHITECTURES
+from prismbo.benchmark.hpo.augmentation import SamplerPolicy
 from torch.utils.data import TensorDataset
 from torchvision import transforms
-from prismbo.benchmark.HPO.param_aug import GaussianMixtureAugmentation
+from prismbo.benchmark.hpo.param_aug import GaussianMixtureAugmentation
   
 
 class EarlyStopping:

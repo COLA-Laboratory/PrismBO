@@ -7,6 +7,14 @@
             "num_objs": "1",
             "num_vars": "5",
             "workloads": "18"
+        },
+        {
+            "name": "Schwefel",
+            "num_vars": "10",
+            "num_objs": "1",
+            "workloads": "0,1,2,3",
+            "budget_type": "function evaluations",
+            "budget": "40"
         }
     ],
     "optimizer": {
@@ -27,12 +35,8 @@
             "autoSelect": false
         },
         "Pretrain": {
-            "type": "TransformerPretrain",
-            "auxiliaryData": [
-                "Sphere_w1_s2_1747229466",
-                "Sphere_w1_s42_1747229351",
-                "Sphere_w1_s1_1747290841"
-            ],
+            "type": "None",
+            "auxiliaryData": [],
             "autoSelect": false
         },
         "Model": {

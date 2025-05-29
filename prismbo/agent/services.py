@@ -54,14 +54,14 @@ class Services:
         return response_content
 
     def _initialize_modules(self):
-        import prismbo.benchmark.RNAInverseDesign
-        import prismbo.benchmark.HPOB
-        import prismbo.benchmark.HPOOOD
-        import prismbo.benchmark.HPO
-        import prismbo.benchmark.Synthetic
-        import prismbo.benchmark.Simulator
+        import prismbo.benchmark.rnainversedesign
+        # import prismbo.benchmark.hpo.HPOB
+        # import prismbo.benchmark.hpo.HPOOOD
+        import prismbo.benchmark.hpo
+        import prismbo.benchmark.synthetic
+        import prismbo.benchmark.gym
         try:
-            import prismbo.benchmark.CSSTuning
+            import prismbo.benchmark.csstuning
         except:
             logger.warning("CSSTuning module not found. Please install the CSSTuning package to use this functionality.")
         import prismbo.optimizer.acquisition_function
@@ -274,41 +274,6 @@ class Services:
     def receive_configuration(self, config_info):
         self.configer.set_configuration(config_info)
         return
-
-    # def receive_tasks(self, tasks_info):
-    #     tasks = {}
-    #     self.tasks_info = tasks_info
-    #     workloads = []
-    #     for task in tasks_info:
-    #         for item in task["workloads"].split(","):
-    #             try:
-    #                 workloads.append(int(item))
-    #             except:
-    #                 workloads.append(item)
-    #         tasks[task["name"]] = {
-    #             "budget_type": task["budget_type"],
-    #             "budget": int(task["budget"]),
-    #             "workloads": workloads,
-    #             "params": {"input_dim": int(task["num_vars"])},
-    #         }
-
-    #     self.configer.set_tasks(tasks)
-    #     return
-
-    # def receive_optimizer(self, config_info):
-
-    #     self.configer.set_optimizer(optimizer_info)
-    #     return
-
-    # def receive_metadata(self, metadata_info):
-    #     print(metadata_info)
-
-    #     self.configer.set_metadata(metadata_info)
-    #     return
-    
-    # def set_metadata(self, dataset_names):
-    #     self.configer.set_metadata(dataset_names)
-    #     pass
 
     def get_all_datasets(self):
         all_tables = self.data_manager.db.get_table_list()

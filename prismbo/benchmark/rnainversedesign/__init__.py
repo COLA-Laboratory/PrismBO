@@ -1,0 +1,1 @@
+from prismbo.benchmark.rnainversedesign.rna_inverse_design import RNAInverseDesign

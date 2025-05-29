@@ -46,7 +46,7 @@ class SyntheticProblemBase(NonTabularProblem):
 
 
 @problem_registry.register("Sphere")
-class SphereOptBenchmark(SyntheticProblemBase):
+class Sphere(SyntheticProblemBase):
     def __init__(
         self, task_name, budget_type, budget, seed, workload, **kwargs
     ):
@@ -68,7 +68,7 @@ class SphereOptBenchmark(SyntheticProblemBase):
         self.optimizers = tuple(self.shift)
         self.dtype = np.float64
 
-        super(SphereOptBenchmark, self).__init__(
+        super(Sphere, self).__init__(
             task_name=task_name,
             seed=seed,
             workload=workload,
@@ -105,7 +105,7 @@ class SphereOptBenchmark(SyntheticProblemBase):
 
 
 @problem_registry.register("Rastrigin")
-class RastriginOptBenchmark(SyntheticProblemBase):
+class Rastrigin(SyntheticProblemBase):
     def __init__(
         self, task_name, budget_type, budget, seed, workload, **kwargs
     ):
@@ -127,7 +127,7 @@ class RastriginOptBenchmark(SyntheticProblemBase):
         self.optimizers = tuple(self.shift + 2.0)
         self.dtype = np.float64
 
-        super(RastriginOptBenchmark, self).__init__(
+        super(Rastrigin, self).__init__(
             task_name=task_name,
             seed=seed,
             workload=workload,
@@ -165,7 +165,7 @@ class RastriginOptBenchmark(SyntheticProblemBase):
 
 
 @problem_registry.register("Schwefel")
-class SchwefelOptBenchmark(SyntheticProblemBase):
+class Schwefel(SyntheticProblemBase):
     def __init__(
         self, task_name, budget_type, budget, seed, workload, **kwargs
     ):
@@ -187,7 +187,7 @@ class SchwefelOptBenchmark(SyntheticProblemBase):
         self.optimizers = tuple(420.9687 - self.shift)
         self.dtype = np.float64
 
-        super(SchwefelOptBenchmark, self).__init__(
+        super(Schwefel, self).__init__(
             task_name=task_name,
             seed=seed,
             workload=workload,
@@ -227,7 +227,7 @@ class SchwefelOptBenchmark(SyntheticProblemBase):
 
 
 @problem_registry.register("LevyR")
-class LevyROptBenchmark(SyntheticProblemBase):
+class LevyR(SyntheticProblemBase):
     def __init__(
         self, task_name, budget_type, budget, seed, workload, **kwargs
     ):
@@ -249,7 +249,7 @@ class LevyROptBenchmark(SyntheticProblemBase):
         self.optimizers = tuple(self.shift - 1.0)
         self.dtype = np.float64
 
-        super(LevyROptBenchmark, self).__init__(
+        super(LevyR, self).__init__(
             task_name=task_name,
             seed=seed,
             workload=workload,
@@ -295,7 +295,7 @@ class LevyROptBenchmark(SyntheticProblemBase):
 
 
 @problem_registry.register("Griewank")
-class GriewankOptBenchmark(SyntheticProblemBase):
+class Griewank(SyntheticProblemBase):
     def __init__(
         self, task_name, budget_type, budget, seed, workload, **kwargs
     ):
@@ -317,7 +317,7 @@ class GriewankOptBenchmark(SyntheticProblemBase):
         self.optimizers = tuple(self.shift)
         self.dtype = np.float64
 
-        super(GriewankOptBenchmark, self).__init__(
+        super(Griewank, self).__init__(
             task_name=task_name,
             seed=seed,
             workload=workload,
@@ -357,7 +357,7 @@ class GriewankOptBenchmark(SyntheticProblemBase):
 
 
 @problem_registry.register("Rosenbrock")
-class RosenbrockOptBenchmark(SyntheticProblemBase):
+class Rosenbrock(SyntheticProblemBase):
     def __init__(
         self, task_name, budget_type, budget, seed, workload, **kwargs
     ):
@@ -379,7 +379,7 @@ class RosenbrockOptBenchmark(SyntheticProblemBase):
         self.optimizers = tuple(self.shift)
         self.dtype = np.float64
 
-        super(RosenbrockOptBenchmark, self).__init__(
+        super(Rosenbrock, self).__init__(
             task_name=task_name,
             seed=seed,
             workload=workload,
@@ -419,7 +419,7 @@ class RosenbrockOptBenchmark(SyntheticProblemBase):
 
 
 @problem_registry.register("DropwaveR")
-class DropwaveROptBenchmark(SyntheticProblemBase):
+class DropwaveR(SyntheticProblemBase):
     def __init__(
         self, task_name, budget_type, budget, seed, workload, **kwargs
     ):
@@ -445,7 +445,7 @@ class DropwaveROptBenchmark(SyntheticProblemBase):
         self.b = np.array([0.2], dtype=self.dtype)
         self.c = np.array([2 * math.pi], dtype=self.dtype)
 
-        super(DropwaveROptBenchmark, self).__init__(
+        super(DropwaveR, self).__init__(
             task_name=task_name,
             seed=seed,
             workload=workload,
@@ -483,7 +483,7 @@ class DropwaveROptBenchmark(SyntheticProblemBase):
 
 
 @problem_registry.register("Langermann")
-class LangermannOptBenchmark(SyntheticProblemBase):
+class Langermann(SyntheticProblemBase):
     def __init__(
         self, task_name, budget_type, budget, seed, workload, **kwargs
     ):
@@ -509,7 +509,7 @@ class LangermannOptBenchmark(SyntheticProblemBase):
         self.m = 3
         self.A = np.random.randint(1, 10, (self.m, self.input_dim))
 
-        super(LangermannOptBenchmark, self).__init__(
+        super(Langermann, self).__init__(
             task_name=task_name,
             seed=seed,
             workload=workload,
@@ -550,7 +550,7 @@ class LangermannOptBenchmark(SyntheticProblemBase):
 
 
 @problem_registry.register("RotatedHyperEllipsoid")
-class RotatedHyperEllipsoidOptBenchmark(SyntheticProblemBase):
+class RotatedHyperEllipsoid(SyntheticProblemBase):
     def __init__(
         self, task_name, budget_type, budget, seed, workload, **kwargs
     ):
@@ -572,7 +572,7 @@ class RotatedHyperEllipsoidOptBenchmark(SyntheticProblemBase):
         self.optimizers = tuple(self.shift - 32.75)
         self.dtype = np.float64
 
-        super(RotatedHyperEllipsoidOptBenchmark, self).__init__(
+        super(RotatedHyperEllipsoid, self).__init__(
             task_name=task_name,
             seed=seed,
             workload=workload,
@@ -610,7 +610,7 @@ class RotatedHyperEllipsoidOptBenchmark(SyntheticProblemBase):
 
 
 @problem_registry.register("SumOfDifferentPowers")
-class SumOfDifferentPowersOptBenchmark(SyntheticProblemBase):
+class SumOfDifferentPowers(SyntheticProblemBase):
     def __init__(
         self, task_name, budget_type, budget, seed, workload, **kwargs
     ):
@@ -632,7 +632,7 @@ class SumOfDifferentPowersOptBenchmark(SyntheticProblemBase):
         self.optimizers = tuple(self.shift + 0.238)
         self.dtype = np.float64
 
-        super(SumOfDifferentPowersOptBenchmark, self).__init__(
+        super(SumOfDifferentPowers, self).__init__(
             task_name=task_name,
             seed=seed,
             workload=workload,
@@ -671,7 +671,7 @@ class SumOfDifferentPowersOptBenchmark(SyntheticProblemBase):
 
 
 @problem_registry.register("StyblinskiTang")
-class StyblinskiTangOptBenchmark(SyntheticProblemBase):
+class StyblinskiTang(SyntheticProblemBase):
     def __init__(
         self, task_name, budget_type, budget, seed, workload, **kwargs
     ):
@@ -693,7 +693,7 @@ class StyblinskiTangOptBenchmark(SyntheticProblemBase):
         self.optimizers = tuple(self.shift - 2.903534)
         self.dtype = np.float64
 
-        super(StyblinskiTangOptBenchmark, self).__init__(
+        super(StyblinskiTang, self).__init__(
             task_name=task_name,
             seed=seed,
             workload=workload,
@@ -730,7 +730,7 @@ class StyblinskiTangOptBenchmark(SyntheticProblemBase):
 
 
 @problem_registry.register("Powell")
-class PowellOptBenchmark(SyntheticProblemBase):
+class Powell(SyntheticProblemBase):
     def __init__(
         self, task_name, budget_type, budget, seed, workload, **kwargs
     ):
@@ -752,7 +752,7 @@ class PowellOptBenchmark(SyntheticProblemBase):
         self.optimizers = [tuple(0.0 for _ in range(self.input_dim))]
         self.dtype = np.float64
 
-        super(PowellOptBenchmark, self).__init__(
+        super(Powell, self).__init__(
             task_name=task_name,
             seed=seed,
             workload=workload,
@@ -796,7 +796,7 @@ class PowellOptBenchmark(SyntheticProblemBase):
 
 
 @problem_registry.register("DixonPrice")
-class DixonPriceOptBenchmark(SyntheticProblemBase):
+class DixonPrice(SyntheticProblemBase):
     def __init__(
         self, task_name, budget_type, budget, seed, workload, **kwargs
     ):
@@ -823,7 +823,7 @@ class DixonPriceOptBenchmark(SyntheticProblemBase):
         ]
         self.dtype = np.float64
 
-        super(DixonPriceOptBenchmark, self).__init__(
+        super(DixonPrice, self).__init__(
             task_name=task_name,
             seed=seed,
             workload=workload,
@@ -864,7 +864,7 @@ class DixonPriceOptBenchmark(SyntheticProblemBase):
 
 
 @problem_registry.register("cp")
-class cpOptBenchmark(SyntheticProblemBase):
+class cp(SyntheticProblemBase):
     def __init__(
         self, task_name, budget_type, budget, seed, workload, **kwargs
     ):
@@ -891,7 +891,7 @@ class cpOptBenchmark(SyntheticProblemBase):
         ]
         self.dtype = np.float64
 
-        super(cpOptBenchmark, self).__init__(
+        super(cp, self).__init__(
             task_name=task_name,
             seed=seed,
             workload=workload,
@@ -932,7 +932,7 @@ class cpOptBenchmark(SyntheticProblemBase):
 
 
 @problem_registry.register("mpb")
-class mpbOptBenchmark(SyntheticProblemBase):
+class mpb(SyntheticProblemBase):
     def __init__(
         self, task_name, budget_type, budget, seed, workload, **kwargs
     ):
@@ -959,7 +959,7 @@ class mpbOptBenchmark(SyntheticProblemBase):
         ]
         self.dtype = np.float64
 
-        super(mpbOptBenchmark, self).__init__(
+        super(mpb, self).__init__(
             task_name=task_name,
             seed=seed,
             workload=workload,
@@ -1068,7 +1068,7 @@ class Ackley(SyntheticProblemBase):
     
     
 @problem_registry.register("Ellipsoid")
-class EllipsoidOptBenchmark(SyntheticProblemBase):
+class Ellipsoid(SyntheticProblemBase):
     def __init__(
         self, task_name, budget_type, budget, seed, workload, **kwargs
     ):
@@ -1092,7 +1092,7 @@ class EllipsoidOptBenchmark(SyntheticProblemBase):
 
         self.condition = 1e6
 
-        super(EllipsoidOptBenchmark, self).__init__(
+        super(Ellipsoid, self).__init__(
             task_name=task_name,
             seed=seed,
             workload=workload,
@@ -1134,7 +1134,7 @@ class EllipsoidOptBenchmark(SyntheticProblemBase):
 
 
 @problem_registry.register("Discus")
-class DiscusOptBenchmark(SyntheticProblemBase):
+class Discus(SyntheticProblemBase):
     def __init__(
         self, task_name, budget_type, budget, seed, workload, **kwargs
     ):
@@ -1158,7 +1158,7 @@ class DiscusOptBenchmark(SyntheticProblemBase):
 
         self.condition = 1e6
 
-        super(DiscusOptBenchmark, self).__init__(
+        super(Discus, self).__init__(
             task_name=task_name,
             seed=seed,
             workload=workload,
@@ -1199,7 +1199,7 @@ class DiscusOptBenchmark(SyntheticProblemBase):
 
 
 @problem_registry.register("BentCigar")
-class BentCigarOptBenchmark(SyntheticProblemBase):
+class BentCigar(SyntheticProblemBase):
     def __init__(
         self, task_name, budget_type, budget, seed, workload, **kwargs
     ):
@@ -1223,7 +1223,7 @@ class BentCigarOptBenchmark(SyntheticProblemBase):
 
         self.condition = 1e6
 
-        super(BentCigarOptBenchmark, self).__init__(
+        super(BentCigar, self).__init__(
             task_name=task_name,
             seed=seed,
             workload=workload,
@@ -1264,7 +1264,7 @@ class BentCigarOptBenchmark(SyntheticProblemBase):
 
 
 @problem_registry.register("SharpRidge")
-class SharpRidgeOptBenchmark(SyntheticProblemBase):
+class SharpRidge(SyntheticProblemBase):
     def __init__(
         self, task_name, budget_type, budget, seed, workload, **kwargs
     ):
@@ -1288,7 +1288,7 @@ class SharpRidgeOptBenchmark(SyntheticProblemBase):
 
         self.alpha = 100.0
 
-        super(SharpRidgeOptBenchmark, self).__init__(
+        super(SharpRidge, self).__init__(
             task_name=task_name,
             seed=seed,
             workload=workload,
@@ -1334,7 +1334,7 @@ class SharpRidgeOptBenchmark(SyntheticProblemBase):
 
 
 @problem_registry.register("GriewankRosenbrock")
-class GriewankRosenbrockOptBenchmark(SyntheticProblemBase):
+class GriewankRosenbrock(SyntheticProblemBase):
     def __init__(
         self, task_name, budget_type, budget, seed, workload, **kwargs
     ):
@@ -1356,7 +1356,7 @@ class GriewankRosenbrockOptBenchmark(SyntheticProblemBase):
         self.optimizers = tuple(self.shift)
         self.dtype = np.float64
 
-        super(GriewankRosenbrockOptBenchmark, self).__init__(
+        super(GriewankRosenbrock, self).__init__(
             task_name=task_name,
             seed=seed,
             workload=workload,
@@ -1401,7 +1401,7 @@ class GriewankRosenbrockOptBenchmark(SyntheticProblemBase):
 
 
 @problem_registry.register("Katsuura")
-class KatsuuraOptBenchmark(SyntheticProblemBase):
+class Katsuura(SyntheticProblemBase):
     def __init__(
         self, task_name, budget_type, budget, seed, workload, **kwargs
     ):
@@ -1423,7 +1423,7 @@ class KatsuuraOptBenchmark(SyntheticProblemBase):
         self.optimizers = tuple(self.shift)
         self.dtype = np.float64
 
-        super(KatsuuraOptBenchmark, self).__init__(
+        super(Katsuura, self).__init__(
             task_name=task_name,
             seed=seed,
             workload=workload,

@@ -1,7 +1,7 @@
 import torch
 import numpy as np
 import random
-from prismbo.benchmark.HPO.image_options import *
+from prismbo.benchmark.hpo.image_options import *
 from torchvision import transforms
 
 import torchvision

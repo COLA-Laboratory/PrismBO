@@ -124,7 +124,7 @@ class MovingPeakGenerator:
             peak = self.peaks[t]
             height = self.heights[t]
             width = self.widths[t]
-            problem = MovingPeakBenchmark(
+            problem = MovingPeak(
                 task_name=self.task_name,
                 budget=self.budget,
                 budget_type=self.budget_type,
@@ -146,7 +146,7 @@ class MovingPeakGenerator:
             peak = self.peaks[t]
             height = self.heights[t]
             width = self.widths[t]
-            problem = MovingPeakBenchmark(
+            problem = MovingPeak(
                 task_name=self.task_name,
                 budget=self.budget,
                 budget_type=self.budget_type,
@@ -225,8 +225,8 @@ class MovingPeakGenerator:
             while data[i] < bound[i, 0] or data[i] > bound[i, 1]:
                 data[i] = data[i] * 0.5 + bound[i, 0] * 0.25 + bound[i, 1] * 0.25
 
-@problem_registry.register("MPB")
-class MovingPeakBenchmark(NonTabularProblem):
+@problem_registry.register("MovingPeak")
+class MovingPeak(NonTabularProblem):
     problem_type = "synthetic"
     num_variables = []
     num_objectives = 1
@@ -263,7 +263,7 @@ class MovingPeakBenchmark(NonTabularProblem):
         
         self.input_dim = input_dim
         
-        super(MovingPeakBenchmark, self).__init__(
+        super(MovingPeak, self).__init__(
             task_name=task_name, seed=seed, task_type=task_type, budget=budget, budget_type=budget_type, task_id=task_id, workload=workload
         )
 

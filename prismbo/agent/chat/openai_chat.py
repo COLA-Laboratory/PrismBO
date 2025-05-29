@@ -373,7 +373,7 @@ class OpenAIChat:
         return json.dumps({"result": function_to_call()})
     
     def _initialize_modules(self):
-        import prismbo.benchmark.Synthetic
+        import prismbo.benchmark.synthetic
         import prismbo.optimizer.acquisition_function
         import prismbo.optimizer.model
         import prismbo.optimizer.pretrain

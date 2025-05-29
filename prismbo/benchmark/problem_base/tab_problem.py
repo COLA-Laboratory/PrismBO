@@ -9,7 +9,7 @@ import pandas as pds
 
 from prismbo.benchmark.problem_base.base import ProblemBase
 from prismbo.utils.encoding import multitarget_encoding, target_encoding
-from prismbo.utils.Read import read_file
+from prismbo.utils.read import read_file
 
 logger = logging.getLogger("TabularProblem")
 

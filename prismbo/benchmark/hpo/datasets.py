@@ -19,7 +19,7 @@ import torchvision
 
 from robustbench.data import load_cifar10c, load_cifar100c, load_imagenetc
 
-from prismbo.benchmark.HPO.augmentation import ImageNetPolicy, CIFAR10Policy, CIFAR10PolicyGeometric, CIFAR10PolicyPhotometric, Cutout, SamplerPolicy
+from prismbo.benchmark.hpo.augmentation import ImageNetPolicy, CIFAR10Policy, CIFAR10PolicyGeometric, CIFAR10PolicyPhotometric, Cutout, SamplerPolicy
 
 ImageFile.LOAD_TRUNCATED_IMAGES = True
 

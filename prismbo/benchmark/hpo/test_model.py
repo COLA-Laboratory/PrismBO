@@ -4,8 +4,8 @@ from torch.utils.data import DataLoader
 from torchvision import transforms
 from torchvision.transforms import ToPILImage
 import matplotlib.pyplot as plt
-from prismbo.benchmark.HPO import algorithms
-from prismbo.benchmark.HPO import datasets
+from prismbo.benchmark.hpo import algorithms
+from prismbo.benchmark.hpo import datasets
 
 # 定义读取模型的路径
 model_path = os.path.expanduser('~/prismbo_tmp/output/models/ROBERM_RobCifar10_0/model.pkl')

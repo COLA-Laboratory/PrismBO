@@ -10,14 +10,14 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.nn.init as init
 import torchvision.models
-from prismbo.benchmark.HPO import networks
+from prismbo.benchmark.hpo import networks
 from sklearn.linear_model import SGDClassifier
 import pyro
 import pyro.distributions as dist
 from pyro.infer import SVI, Trace_ELBO
 from pyro.optim import SGD
 
-from prismbo.benchmark.HPO.augmentation import mixup_data, mixup_criterion, AugMixDataset, ParameterizedAugmentation
+from prismbo.benchmark.hpo.augmentation import mixup_data, mixup_criterion, AugMixDataset, ParameterizedAugmentation
 
 ALGORITHMS = [
     'ERM',

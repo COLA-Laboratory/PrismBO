@@ -226,7 +226,7 @@ def create_app():
             return jsonify({"error": str(e)}), 500
     
         # 使用单进程执行
-        services.set_multiprocessing(False)
+        services.set_multiprocessing(True)
         services.run_optimize()
         
         return jsonify({"isSucceed": True}), 200
