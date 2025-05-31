@@ -1,44 +1,111 @@
 import numpy as np
+# print(hasattr(np.dtypes, 'StringDType'))
+
 from hebo.design_space.design_space import DesignSpace
 from hebo.optimizers.hebo import HEBO
-from transopt.benchmark.HPO.HPO_ERM import HPO_ERM
+from prismbo.benchmark.synthetic.singleobj import *
+import numpy as np
+import json
+import os
+from datetime import datetime
 
-# Create a single HPO_ERM instance
-hpo = HPO_ERM(task_name='hebo_optimization', budget_type='FEs', budget=2000, seed=42, 
-                workload=0, algorithm='ERM', gpu_id=0, augment=None, architecture='alexnet', 
-                model_size=1, optimizer='hebo_without_augment', base_dir='/data2/mpl')
+def objective(params):
+    result = task.objective_function(configuration=params)
+    return {'loss': result['f1'], 'status': 'ok'}
 
-# Define the objective function
-def objective(config):
-    # Convert config dict to list according to variables_order
-    config_list = np.array([config[name] for name in hpo.configuration_space.variables_order])
-    
-    result = hpo.objective_function(configuration=config_list)
-    return 1 - result['function_value']
-
-# Define the design space
 def get_design_space():
-    original_ranges = hpo.configuration_space.original_ranges
+    original_ranges = task.configuration_space.original_ranges
     space = DesignSpace().parse([
         {'name': param_name, 'type': 'num', 'lb': param_range[0], 'ub': param_range[1]}
         for param_name, param_range in original_ranges.items()
     ])
     return space
 
-if __name__ == "__main__":
-    # Create the design space
+def run_experiment(task_name, task_class, input_dim, workload, seed, n_iterations=200):
+    # Create task instance
+    global task
+    task = task_class(
+        task_name=task_name,
+        budget_type='FEs',
+        budget=220,
+        seed=seed,
+        workload=workload,
+        params={'input_dim': input_dim}
+    )
+    
+    # Create design space
     design_space = get_design_space()
     
     # Initialize HEBO
-    opt = HEBO(design_space, scramble_seed=0)
+    opt = HEBO(design_space, scramble_seed=seed)
     
     # Run optimization
-    n_iterations = 200
     for i in range(n_iterations):
         rec = opt.suggest(n_suggestions=1)
-        f_val = objective(rec.to_dict(orient='records')[0])
-        y = np.array([[f_val]])
+        config = rec.to_dict(orient='records')[0]
+        result = objective(config)
+        y = np.array([[result['loss']]])
         opt.observe(rec, y)
-        print(f'After {i+1} iterations, best obj is {opt.y.min():.4f}')
+    
+    # Collect optimization history
+    history = []
+    for i in range(len(opt.y)):
+        history.append({
+            'iteration': i,
+            'params': opt.X[i].tolist(),
+            'loss': float(opt.y[i][0])
+        })
+    
+    return {
+        'best_params': opt.X[opt.y.argmin()].tolist(),
+        'best_value': float(1 - opt.y.min()),
+        'history': history
+    }
 
-
+if __name__ == "__main__":
+    # Experiment settings
+    tasks = [
+        ('Sphere', Sphere, 10),
+        ('Rastrigin', Rastrigin, 10),
+        ('Schwefel', Schwefel, 10),
+        ('Ackley', Ackley, 10),
+        ('Griewank', Griewank, 10),
+        ('Rosenbrock', Rosenbrock, 10),
+    ]
+    workloads = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]  # Different workloads
+    seeds = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]  # Multiple seeds for repetition
+    
+    # Create results directory
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    results_dir = f"results/hebo_{timestamp}"
+    os.makedirs(results_dir, exist_ok=True)
+    
+    # Run experiments
+    all_results = {}
+    for task_name, task_class, input_dim in tasks:
+        task_results = {}
+        for workload in workloads:
+            workload_results = []
+            for seed in seeds:
+                print(f"Running {task_name} with workload {workload}, seed {seed}")
+                result = run_experiment(task_name, task_class, input_dim, workload, seed)
+                workload_results.append({
+                    'seed': seed,
+                    'result': result
+                })
+            task_results[f'workload_{workload}'] = workload_results
+        all_results[task_name] = task_results
+    
+    # Save results
+    with open(f"{results_dir}/results.json", 'w') as f:
+        json.dump(all_results, f, indent=2)
+    
+    # Print summary
+    for task_name in all_results:
+        print(f"\nResults for {task_name}:")
+        for workload in workloads:
+            workload_results = all_results[task_name][f'workload_{workload}']
+            best_values = [r['result']['best_value'] for r in workload_results]
+            print(f"Workload {workload}:")
+            print(f"  Mean best value: {np.mean(best_values):.4f}")
+            print(f"  Std best value: {np.std(best_values):.4f}")

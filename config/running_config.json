@@ -1,20 +1,44 @@
 {
     "tasks": [
         {
-            "budget": "20",
+            "budget": "220",
             "budget_type": "function evaluations",
             "name": "Sphere",
             "num_objs": "1",
-            "num_vars": "5",
-            "workloads": "18"
+            "num_vars": "10",
+            "workloads": "0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19"
         },
         {
-            "name": "Schwefel",
-            "num_vars": "10",
-            "num_objs": "1",
-            "workloads": "0,1,2,3",
+            "budget": "220",
             "budget_type": "function evaluations",
-            "budget": "40"
+            "name": "Rastrigin",
+            "num_objs": "1",
+            "num_vars": "10",
+            "workloads": "0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19"
+        },
+        {
+            "budget": "220",
+            "budget_type": "function evaluations",
+            "name": "Ackley",
+            "num_objs": "1",
+            "num_vars": "10",
+            "workloads": "0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19"
+        },
+        {
+            "budget": "220",
+            "budget_type": "function evaluations",
+            "name": "Griewank",
+            "num_objs": "1",
+            "num_vars": "10",
+            "workloads": "0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19"
+        },
+        {
+            "budget": "220",
+            "budget_type": "function evaluations",
+            "name": "Rosenbrock",
+            "num_objs": "1",
+            "num_vars": "10",
+            "workloads": "0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19"
         }
     ],
     "optimizer": {
@@ -25,7 +49,7 @@
         },
         "Initialization": {
             "type": "random",
-            "InitNum": 11,
+            "InitNum": 110,
             "auxiliaryData": [],
             "autoSelect": false
         },
@@ -50,7 +74,7 @@
             "autoSelect": false
         }
     },
-    "seeds": "0",
+    "seeds": "0,1,2,3,4,5",
     "remote": false,
     "server_url": "",
     "experimentName": "",

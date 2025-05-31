@@ -30,7 +30,11 @@ hyperopt
 flask_cors
 openai
 ViennaRNA
-
+ml_collections
+flax
+shap
+lime
+# botorch
 # Analysis
 pandas
 tikzplotlib

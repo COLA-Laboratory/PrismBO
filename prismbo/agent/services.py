@@ -38,16 +38,7 @@ class Services:
         self.process_info = Manager().dict()
         self.lock = Manager().Lock()
         
-        # Add configuration for multiprocessing
-        self.use_multiprocessing = True  # Default to True for backward compatibility
 
-    def set_multiprocessing(self, use_mp: bool):
-        """Set whether to use multiprocessing for optimization.
-        
-        Args:
-            use_mp (bool): If True, use multiprocessing; if False, use single process.
-        """
-        self.use_multiprocessing = use_mp
 
     def chat(self, user_input):
         response_content = self.openai_chat.get_response(user_input)
@@ -378,22 +369,17 @@ class Services:
         configurations = self.configer.get_configuration()
         seeds = configurations['seeds'].split(',')
         seeds = [int(seed) for seed in seeds]
-        self.use_multiprocessing = False
         
-        if self.use_multiprocessing:
-            # Create a separate process for each seed
-            process_list = []
-            for seed in seeds:
-                p = Process(target=self._run_optimize_process, args=(int(seed), configurations))
-                process_list.append(p)
-                p.start()
-            
-            for p in process_list:
-                p.join()
-        else:
-            # Sequential execution
-            for seed in seeds:
-                self._run_optimize_process(int(seed), configurations)
+        # Create a separate process for each seed
+        process_list = []
+        for seed in seeds:
+            p = Process(target=self._run_optimize_process, args=(int(seed), configurations))
+            process_list.append(p)
+            p.start()
+        
+        for p in process_list:
+            p.join()
+        
     
     def _run_optimize_process(self, seed, configurations):
         # Each process constructs its own DataManager
