@@ -33,7 +33,7 @@ def ConstructOptimizer(optimizer_config: dict = None, seed: int = 0) -> BO:
     
     if 'Parameters' not in optimizer_config['Initialization']:
         optimizer_config['Initialization']['Parameters'] = {}
-    Initialization = sampler_registry[optimizer_config['Initialization']['type']](optimizer_config['Initialization']['InitNum'],optimizer_config['Initialization']['Parameters'])
+    Initialization = sampler_registry[optimizer_config['Initialization']['type']](optimizer_config['Initialization']['Parameters'])
     
     if 'Parameters' not in optimizer_config['AcquisitionFunction']:
         optimizer_config['AcquisitionFunction']['Parameters'] = {}
