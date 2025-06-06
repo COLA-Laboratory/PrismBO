@@ -3,42 +3,10 @@
         {
             "budget": "220",
             "budget_type": "function evaluations",
-            "name": "Sphere",
-            "num_objs": "1",
-            "num_vars": "10",
-            "workloads": "0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19"
-        },
-        {
-            "budget": "220",
-            "budget_type": "function evaluations",
-            "name": "Rastrigin",
-            "num_objs": "1",
-            "num_vars": "10",
-            "workloads": "0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19"
-        },
-        {
-            "budget": "220",
-            "budget_type": "function evaluations",
-            "name": "Ackley",
-            "num_objs": "1",
-            "num_vars": "10",
-            "workloads": "0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19"
-        },
-        {
-            "budget": "220",
-            "budget_type": "function evaluations",
-            "name": "Griewank",
-            "num_objs": "1",
-            "num_vars": "10",
-            "workloads": "0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19"
-        },
-        {
-            "budget": "220",
-            "budget_type": "function evaluations",
             "name": "Rosenbrock",
             "num_objs": "1",
             "num_vars": "10",
-            "workloads": "0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19"
+            "workloads": "0,1,2,3,4,5"
         }
     ],
     "optimizer": {
@@ -64,8 +32,12 @@
             "autoSelect": false
         },
         "Model": {
-            "type": "GP",
-            "auxiliaryData": [],
+            "type": "MTGP",
+            "auxiliaryData": [
+                "Rosenbrock_w0_s0_1748977046",
+                "Rosenbrock_w1_s0_1748977110",
+                "Rosenbrock_w2_s0_1748977183"
+            ],
             "autoSelect": false
         },
         "Normalizer": {
@@ -77,6 +49,6 @@
     "seeds": "0,1,2,3,4,5",
     "remote": false,
     "server_url": "",
-    "experimentName": "",
-    "experimentDescription": ""
+    "experimentName": "Ours",
+    "experimentDescription": "our results"
 }

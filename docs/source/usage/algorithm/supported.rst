@@ -1,0 +1,5 @@
+.. _alg:
+
+Supported Algorithms
+====================
+

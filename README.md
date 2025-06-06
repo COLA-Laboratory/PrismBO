@@ -1,6 +1,6 @@
 <p align="center">
   <a href="https://maopl.github.io/TransOpt-doc/">
-    <img src="./docs/source/_static/figures/PrismBO.jpg" alt="" width="40%" align="top">
+    <img src="./docs/source/_static/figures/PrismBO.png" alt="" width="40%" align="top">
   </a>
 </p>
 <p align="center">
@@ -16,6 +16,13 @@
 
 <a href="https://github.com/psf/black"><img alt="Code style: black" src="https://img.shields.io/badge/code%20style-black-000000.svg"></a>
 <a href="https://github.com/psf/black"><img alt="Code style: black" src="https://img.shields.io/badge/python_version-3.10-purple"></a>
+<a href="https://opensource.org/licenses/BSD-3-Clause">
+  <img alt="License: BSD 3-Clause" src="https://img.shields.io/badge/license-BSD--3--Clause-blue.svg">
+</a>
+<a href="https://opensource.org/licenses/BSD-3-Clause"> <img alt="Web UI: available" src="https://img.shields.io/badge/web--ui-enabled-brightgreen"> </a>
+<a href="https://www.sqlite.org/"> <img alt="Database: SQLite" src="https://img.shields.io/badge/database-sqlite-lightgrey?logo=sqlite"></a>
+<a href="https://opensource.org/licenses/BSD-3-Clause"> <img alt="CLI Support" src="https://img.shields.io/badge/cli-support-green"> </a>
+<a href="https://opensource.org/licenses/BSD-3-Clause"> <img alt="Multiprocessing" src="https://img.shields.io/badge/multiprocessing-enabled-blueviolet"> </a>
 
 </div>
 

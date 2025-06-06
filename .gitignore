@@ -22,12 +22,13 @@ sdist/
 var/
 wheels/
 demo/
+external/
 *.egg-info/
 .installed.cfg
 *.egg
 *.csv
 *.zip
-#*.json
+*.json
 *.jsonl
 # PyInstaller
 # 通常如果您使用PyInstaller，以下目录应该被忽略
@@ -50,7 +51,6 @@ coverage.xml
 *.cover
 .hypothesis/
 .pytest_cache/
-
 # Jupyter Notebook
 .ipynb_checkpoints
 

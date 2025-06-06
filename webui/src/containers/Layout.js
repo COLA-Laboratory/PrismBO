@@ -21,7 +21,7 @@ function flattenRoutes(routes) {
 
 const Logo = (
     <div style={{ display: 'flex', alignItems: 'center' }}>
-        <img src="/PrismBO.png" alt="TransOpt Logo" style={{ height: '54px', width: 'auto', marginRight: '5px' }} />
+        <img src="/PrismBO.jpg" alt="TransOpt Logo" style={{ height: '54px', width: 'auto', marginRight: '5px' }} />
     </div>
 )
 

@@ -50,7 +50,7 @@ exclude_patterns = []
 
 bibtex_bibfiles = ['usage/TOS.bib']
 
-html_logo = "_static//figures/PrismBO.png"
+html_logo = "_static//figures/PrismBO.jpg"
 
 # html_favicon = '_static/favicon.ico'
 

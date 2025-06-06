@@ -39,7 +39,7 @@ Contents
 
    installation
    quickstart
-   usage/algorithms
+   usage/algorithm/algorithm
    usage/problems
    usage/results
    usage/data_manage
