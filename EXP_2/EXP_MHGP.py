@@ -70,7 +70,7 @@ def get_model(
 def run_experiment(num_source_points, benchmark_name, num_steps, output_noise=0.1, params_source=None, params_target=None) -> List[float]:
     """The actual experiment code."""
     num_source_points = num_source_points
-    technique = "MTGP"
+    technique = "MHGP"
     benchmark_name = benchmark_name
     num_steps = num_steps
     output_noise = output_noise
@@ -145,19 +145,18 @@ def get_source_data(task_name, services):
 if __name__ == "__main__":
     input_dim = 10
     tasks = [
-        ('Rastrigin', Rastrigin, input_dim),
+        # ('Rastrigin', Rastrigin, input_dim),
         ('Schwefel', Schwefel, input_dim),
         ('Ackley', Ackley, input_dim),
         ('Griewank', Griewank, input_dim),
         ('Rosenbrock', Rosenbrock, input_dim),
     ]
-    budget = 5
+    budget = input_dim * 2
     initial_num = input_dim * 11
     dtype = torch.float
     # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     
 
-    
     services = Services(None, None, None)
     services._initialize_modules()
     
@@ -187,7 +186,7 @@ if __name__ == "__main__":
                 workload=workload,
                 params={'input_dim': input_dim}
             )
-                    
+
         obj = objective_function(search_space=target_task.configuration_space, task=target_task)
 
         # Get parameter space
@@ -208,7 +207,7 @@ if __name__ == "__main__":
     # Multiple seeds for repetition
     # Create results directory
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    results_dir = f"results/MTBO_{timestamp}"
+    results_dir = f"results/MHGP_{timestamp}"
     os.makedirs(results_dir, exist_ok=True)
     
     all_results = {}

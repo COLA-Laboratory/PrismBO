@@ -151,13 +151,12 @@ if __name__ == "__main__":
         ('Griewank', Griewank, input_dim),
         ('Rosenbrock', Rosenbrock, input_dim),
     ]
-    budget = 5
+    budget = input_dim * 2
     initial_num = input_dim * 11
     dtype = torch.float
     # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     
 
-    
     services = Services(None, None, None)
     services._initialize_modules()
     
@@ -187,7 +186,7 @@ if __name__ == "__main__":
                 workload=workload,
                 params={'input_dim': input_dim}
             )
-                    
+
         obj = objective_function(search_space=target_task.configuration_space, task=target_task)
 
         # Get parameter space
