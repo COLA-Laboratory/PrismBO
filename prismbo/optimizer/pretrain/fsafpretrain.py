@@ -56,7 +56,7 @@ class FSAFPretrain(PretrainBase):
         inner_loop_steps = 5
         guide_points = 5
 
-        n_iterations = 1000
+        n_iterations = 10
         batch_size = 128
         n_workers = 5
         arch_spec = 4 * [200]
@@ -130,28 +130,37 @@ class FSAFPretrain(PretrainBase):
                 "using_chaser":True,
                 "demo_prob" : 1/128,
             }
+        
 
     
     def set_data(self, metadata, metadata_info= None):
         
-        train_data = {}
-        for dataset_name, data in metadata.items():
-            objectives = metadata_info[dataset_name]["objectives"]
-            obj = objectives[0]["name"]
+        register(
+            id=self.env_spec["env_id"],
+            entry_point="external.fsaf.environment.function_gym:FSAF",
+            max_episode_steps=self.env_spec["T_max"] if "T_max" in self.env_spec else self.env_spec["T"],
+            reward_threshold=None,
+            kwargs=self.env_spec
+        )
 
-            obj_data = [d[obj] for d in data]
-            var_data = [[d[var["name"]] for var in metadata_info[dataset_name]["variables"]] for d in data]
-            self.input_size = metadata_info[dataset_name]['num_variables']
-            train_data[dataset_name] = {'X':np.array(var_data), 'y':np.array(obj_data)[:, np.newaxis]}
+        
+        # train_data = {}
+        # for dataset_name, data in metadata.items():
+        #     objectives = metadata_info[dataset_name]["objectives"]
+        #     obj = objectives[0]["name"]
+
+        #     obj_data = [d[obj] for d in data]
+        #     var_data = [[d[var["name"]] for var in metadata_info[dataset_name]["variables"]] for d in data]
+        #     self.input_size = metadata_info[dataset_name]['num_variables']
+        #     train_data[dataset_name] = {'X':np.array(var_data), 'y':np.array(obj_data)[:, np.newaxis]}
             
-        self.train_data = train_data
-        self.get_tasks()
+        # self.train_data = train_data
+        # self.get_tasks()
 
     
     def meta_train(self):
         # Create log directory
-        logpath = os.path.join('./external/model/fsaf', "log", 
-                             datetime.strftime(datetime.now(), "%Y-%m-%d-%H-%M-%S"))
+        logpath = os.path.join('./external/model/fsaf')
         os.makedirs(logpath, exist_ok=True)
 
         # Set up policy
@@ -167,11 +176,7 @@ class FSAFPretrain(PretrainBase):
         dqn = DQN(policy_fn=policy_fn, params=self.dqn_spec, logpath=logpath, save_interval=10)
         
         # Train using the provided data
-        for dataset_name, data in self.train_data.items():
-            X = data['X']
-            y = data['y']
-            print(f"Training on dataset: {dataset_name}")
-            dqn.train_with_data(X, y)
+        dqn.train()
 
         # Plot final learning curve
         plot_learning_curve_online(logpath=logpath, reload=False)

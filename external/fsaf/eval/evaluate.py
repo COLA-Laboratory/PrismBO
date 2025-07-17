@@ -24,8 +24,8 @@ import pickle as pkl
 import torch
 from datetime import datetime
 from collections import namedtuple
-from fsaf.policies.policies import *
-from fsaf.RL.test_recorder import BatchRecorder, Transition
+from external.fsaf.policies.policies import *
+from external.fsaf.RL.test_recorder import BatchRecorder, Transition
 
 Result = namedtuple("Result",
                     "logpath env_id env_specs policy policy_specs deterministic load_iter T n_episodes rewards")

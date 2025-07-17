@@ -7,3 +7,4 @@ from prismbo.optimizer.acquisition_function.taf import AcquisitionTAF
 from prismbo.optimizer.acquisition_function.raf import AcquisitionRAF
 from prismbo.optimizer.acquisition_function.constrain_lc import AcquisitionConstrainLCB
 from prismbo.optimizer.acquisition_function.mes import AcquisitionMES
+from prismbo.optimizer.acquisition_function.fsaf import AcquisitionFSAF

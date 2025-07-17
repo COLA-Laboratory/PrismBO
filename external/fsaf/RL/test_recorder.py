@@ -20,7 +20,7 @@ import os
 
 os.environ["OMP_NUM_THREADS"] = "1"  # on some machines this is needed to restrict torch to one core
 
-from namedlist import namedlist
+from collections import namedtuple
 import random
 import gym
 import numpy as np
@@ -30,7 +30,7 @@ import itertools
 import time
 from torch.distributions import Categorical
 import torch.nn.functional as F
-Transition = namedlist("Transition", ["state", "action", "reward", "value", "new", "tdlamret", "adv"])
+Transition = namedtuple("Transition", ["state", "action", "reward", "value", "new", "tdlamret", "adv"])
 
 
 class EnvRunner(mp.Process):

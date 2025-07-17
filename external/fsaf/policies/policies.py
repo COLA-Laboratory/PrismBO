@@ -91,7 +91,7 @@ class NeuralAF(nn.Module):
         '''
         get af value for each points
         '''
-        state = torch.from_numpy(state[None, :].astype(np.float32))
+        state = torch.from_numpy(state[None, :].astype(np.float32)).cuda()
         with torch.no_grad():
             out = self.forward(state)
         af = out[0].to("cpu").numpy().squeeze()

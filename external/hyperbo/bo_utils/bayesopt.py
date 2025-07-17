@@ -23,7 +23,7 @@ from external.hyperbo.basics import definitions as defs
 from external.hyperbo.bo_utils import const
 from external.hyperbo.gp_utils import gp
 from external.hyperbo.gp_utils import objectives as obj
-from hyperbo.gp_utils import priors
+# from external.hyperbo.gp_utils import priors
 import jax
 import jax.numpy as jnp
 import jaxopt

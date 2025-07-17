@@ -215,6 +215,12 @@ def create_app():
         return {"succeed": True}, 200
 
 
+    @app.route("/api/configuration/set_multi_run", methods=["POST"])
+    def configuration_set_multi_run():
+        data = request.json
+        services.set_multi_run(data)
+        return {"succeed": True}, 200
+
     @app.route("/api/configuration/run", methods=["POST"])
     def configuration_run():
         config_info = request.json

@@ -186,7 +186,8 @@ class EnvRunner(mp.Process):
                 action, value = self.act(state)
                 acqu = None
             
-            next_state, reward, done, _ = self.env.step(action)
+            next_state, reward, terminated, truncated, _ = self.env.step(action)
+            done = terminated or truncated
             self.step_counter += 1
             if self.step_counter == 15:
                 self.reward15.append(-10**(-reward))

@@ -37,15 +37,14 @@ class FSAF(gym.Env):
         
         self.kwargs = kwargs
         
-        self.general_setting(self.kwargs["D"])
+        self.general_setting(self.kwargs["D"], self.kwargs["space"])
+        
 
-
-    def general_setting(self,D):
+    def general_setting(self,D, space):
         # setting Dimension, kernel parameter, state feature
         # number of dimensions
         self.D = D
         
-
         # the domain (unit hypercube)
         self.domain = np.stack([np.zeros(self.D, ), np.ones(self.D, )], axis=1)
 
@@ -59,11 +58,11 @@ class FSAF(gym.Env):
         assert self.T_min > 0
         assert self.T_min <= self.T_max
 
-        # the initial design
+        # # the initial design
         self.n_init_samples = self.kwargs["n_init_samples"]
         assert self.n_init_samples <= self.T_max
-        if not (self.kwargs["f_type"] == "HPO"):
-            self.initial_design = sobol_seq.i4_sobol_generate(self.D, self.n_init_samples)
+        # if not (self.kwargs["f_type"] == "HPO"):
+        #     self.initial_design = sobol_seq.i4_sobol_generate(self.D, self.n_init_samples)
 
         # the AF and its optimization
         self.af = None
@@ -96,12 +95,9 @@ class FSAF(gym.Env):
             self.af_max_search_diam = 2 * 1 / N_MS_per_dim
         else:
             self.discrete_domain = True
-            if self.kwargs["f_type"] == "HPO":
-                self.cardinality_xi_t = self.kwargs["cardinality_domain"]
-                self.xi_t = None 
-            else:
-                self.cardinality_xi_t = self.kwargs["cardinality_domain"]
-                self.xi_t = sobol_seq.i4_sobol_generate(self.D, self.kwargs["cardinality_domain"])  
+
+            self.cardinality_xi_t = self.kwargs["cardinality_domain"]
+            self.xi_t = sobol_seq.i4_sobol_generate(self.D, self.kwargs["cardinality_domain"])  
             # will be set for once for each new function
             
 
@@ -130,13 +126,8 @@ class FSAF(gym.Env):
         if "mes" in self.features:
             self.mes = MES(dim=self.D)
             self.n_features += 1
-        self.observation_space = gym.spaces.Box(low=-100000.0, high=100000.0,
-                                                shape=(self.cardinality_xi_t, self.n_features),
-                                                dtype=np.float32)
-        self.pass_X_to_pi = self.kwargs["pass_X_to_pi"]
 
-        # action space: index of one of the grid points
-        self.action_space = gym.spaces.Discrete(self.cardinality_xi_t)
+        self.pass_X_to_pi = self.kwargs["pass_X_to_pi"]
 
         # optimization step
         self.t = None
@@ -145,27 +136,40 @@ class FSAF(gym.Env):
         self.reward_transformation = self.kwargs["reward_transformation"]
 
         # the ground truth function
-        self.f_type = self.kwargs["f_type"]
-        self.f_opts = self.kwargs["f_opts"]
-        self.f = None
-        self.y_max = None
-        self.y_min = None
-        self.x_max = None
+        # self.f_type = self.kwargs["f_type"]
+        # self.f_opts = self.kwargs["f_opts"]
+        # self.f = None
+        # self.y_max = None
+        # self.y_min = None
+        # self.x_max = None
 
-        # the training data
-        self.X = self.Y = None  # None means empty
-        self.gp_is_empty = True
+        # # the training data
+        self.model = self.kwargs["model"]
+    
+        self.X = self.model._X  # None means empty
+        self.Y = self.model._Y
+        self.model_is_empty = False
+        
+        self.rng = np.random.RandomState()
+        self.seeded_with = 0
+        self.rng.seed(self.seeded_with)
+        
+        self.observation_space = gym.spaces.Box(low=-100000.0, high=100000.0,
+                                                shape=(self.cardinality_xi_t, self.n_features),
+                                                dtype=np.float32)
+        # action space: index of one of the grid points
+        self.action_space = gym.spaces.Discrete(self.cardinality_xi_t)
 
         # the surrogate GP
-        self.mf = None
-        self.gp = None
-        self.kernel_variance = self.kwargs["kernel_variance"]
-        self.kernel_lengthscale = np.array(self.kwargs["kernel_lengthscale"])
-        self.noise_variance = self.kwargs["noise_variance"]
-        if "use_prior_mean_function" in self.kwargs and self.kwargs["use_prior_mean_function"]:
-            self.use_prior_mean_function = True
-        else:
-            self.use_prior_mean_function = False
+        # self.mf = None
+        # self.model = None
+        # self.kernel_variance = self.kwargs["kernel_variance"]
+        # self.kernel_lengthscale = np.array(self.kwargs["kernel_lengthscale"])
+        # self.noise_variance = self.kwargs["noise_variance"]
+        # if "use_prior_mean_function" in self.kwargs and self.kwargs["use_prior_mean_function"]:
+        #     self.use_prior_mean_function = True
+        # else:
+        #     self.use_prior_mean_function = False
 
 
     def seed(self, seed=None):
@@ -184,14 +188,15 @@ class FSAF(gym.Env):
     def reset(self):
         if self.reward_transformation == "cumulative":
             self.cumulative_reward = 0
-        if self.do_local_af_opt and not self.f_type == "HPO":
+        if self.do_local_af_opt:
             choice_indices = self.rng.choice(len(self.multistart_grid), self.N_S, replace=False)
             self.xi_init = np.array([self.multistart_grid[i] for i in choice_indices])
 
+
         # draw a new function from self.f_type
-        self.draw_new_function()
+        # self.draw_new_function()
         # reset the GP
-        self.reset_gp()
+        # self.reset_gp()
         # reset step counters
         self.reset_step_counters()
         # optimize the AF
@@ -210,19 +215,19 @@ class FSAF(gym.Env):
 
         x_action = self.convert_idx_to_x(action)
         self.add_data(x_action)  # do this BEFORE calling get_reward()
-        reward = self.get_reward(x_action)
-        self.update_gp()  # do this AFTER calling get_reward()
+        # reward = self.get_reward(x_action)
+        # self.update_gp()  # do this AFTER calling get_reward()
         self.optimize_AF()
         next_state = self.get_state(self.xi_t)
         # early stop while training
             # Split "done" into terminated and truncated
-        terminated = self.is_terminal()
-        truncated = (
-            self.t >= 30
-            and np.min(self.y_max - self.Y) < self.f_opts["min_regret"]
-            and "T_max" in self.kwargs
-            and self.f_type == "GP"
-        )
+        # terminated = self.is_terminal()
+        # truncated = (
+        #     self.t >= 30
+        #     and np.min(self.y_max - self.Y) < self.f_opts["min_regret"]
+        #     and "T_max" in self.kwargs
+        #     and self.f_type == "GP"
+        # )
 
         
         
@@ -241,199 +246,199 @@ class FSAF(gym.Env):
     def close(self):
         pass
 
-    def draw_new_function(self):
-        if "metaTrainShot" in self.f_opts:
-            if 1 > len(self.shot_funcs):
-                pass
-            else:
-                dic = self.shot_funcs[0]
-                self.f = dic["f"]
-                self.y_min = dic["y_min"]
-                self.y_max = dic["y_max"]
-                self.x_max = dic["x_max"]
-                return 
+    # def draw_new_function(self):
+    #     if "metaTrainShot" in self.f_opts:
+    #         if 1 > len(self.shot_funcs):
+    #             pass
+    #         else:
+    #             dic = self.shot_funcs[0]
+    #             self.f = dic["f"]
+    #             self.y_min = dic["y_min"]
+    #             self.y_max = dic["y_max"]
+    #             self.x_max = dic["x_max"]
+    #             return 
 
-        if self.f_type == "GP":
-            seed = self.rng.randint(100000)
-            n_features = 500
-            lengthscale = self.rng.uniform(low=self.f_opts["lengthscale_low"],
-                                           high=self.f_opts["lengthscale_high"])
-            noise_var = self.rng.uniform(low=self.f_opts["noise_var_low"],
-                                         high=self.f_opts["noise_var_high"])
-            signal_var = self.rng.uniform(low=self.f_opts["signal_var_low"],
-                                          high=self.f_opts["signal_var_high"])
-            kernel = self.f_opts["kernel"] if "kernel" in self.f_opts else "RBF"
-            # print(kernel, self.D)
+    #     if self.f_type == "GP":
+    #         seed = self.rng.randint(100000)
+    #         n_features = 500
+    #         lengthscale = self.rng.uniform(low=self.f_opts["lengthscale_low"],
+    #                                        high=self.f_opts["lengthscale_high"])
+    #         noise_var = self.rng.uniform(low=self.f_opts["noise_var_low"],
+    #                                      high=self.f_opts["noise_var_high"])
+    #         signal_var = self.rng.uniform(low=self.f_opts["signal_var_low"],
+    #                                       high=self.f_opts["signal_var_high"])
+    #         kernel = self.f_opts["kernel"] if "kernel" in self.f_opts else "RBF"
+    #         # print(kernel, self.D)
             
 
-            ssgp = SparseSpectrumGP(seed=seed, input_dim=self.D, noise_var=noise_var, 
-                                    length_scale=lengthscale,
-                                    signal_var=signal_var, n_features=n_features, kernel=kernel,periods=self.f_opts["periods"])
-            x_train = np.array([]).reshape(0, self.D)
-            y_train = np.array([]).reshape(0, 1)
-            ssgp.train(x_train, y_train, n_samples=1)
-            self.f = lambda x: ssgp.sample_posterior_handle(x).reshape(-1, 1)
+    #         ssgp = SparseSpectrumGP(seed=seed, input_dim=self.D, noise_var=noise_var, 
+    #                                 length_scale=lengthscale,
+    #                                 signal_var=signal_var, n_features=n_features, kernel=kernel,periods=self.f_opts["periods"])
+    #         x_train = np.array([]).reshape(0, self.D)
+    #         y_train = np.array([]).reshape(0, 1)
+    #         ssgp.train(x_train, y_train, n_samples=1)
+    #         self.f = lambda x: ssgp.sample_posterior_handle(x).reshape(-1, 1)
 
-            # load gp-hyperparameters
-            self.kernel_lengthscale = lengthscale if not kernel == "SM" else lengthscale/4
-            self.kernel_variance = signal_var
-            self.noise_variance = 8.9e-16
+    #         # load gp-hyperparameters
+    #         self.kernel_lengthscale = lengthscale if not kernel == "SM" else lengthscale/4
+    #         self.kernel_variance = signal_var
+    #         self.noise_variance = 8.9e-16
 
-            if self.do_local_af_opt:
-                x_vec = self.xi_init
-            else:
-                x_vec = self.xi_t
-            y_vec = self.f(x_vec)
-            self.x_max = x_vec[np.argmax(y_vec)].reshape(1, self.D)
-            self.y_max = np.max(y_vec)
-            self.y_min = np.min(y_vec)
+    #         if self.do_local_af_opt:
+    #             x_vec = self.xi_init
+    #         else:
+    #             x_vec = self.xi_t
+    #         y_vec = self.f(x_vec)
+    #         self.x_max = x_vec[np.argmax(y_vec)].reshape(1, self.D)
+    #         self.y_max = np.max(y_vec)
+    #         self.y_min = np.min(y_vec)
 
-            self.f = lambda x: ssgp.sample_posterior_handle(x).reshape(-1, 1) - self.f_opts["min_regret"]
-        elif self.f_type == "ackley":
-            if "bound_translation" in self.f_opts:
-                    # sample translation
-                    t = self.rng.uniform(low=-self.f_opts["bound_translation"],
-                                         high=self.f_opts["bound_translation"], size=(1, self.D))
+    #         self.f = lambda x: ssgp.sample_posterior_handle(x).reshape(-1, 1) - self.f_opts["min_regret"]
+    #     elif self.f_type == "ackley":
+    #         if "bound_translation" in self.f_opts:
+    #                 # sample translation
+    #                 t = self.rng.uniform(low=-self.f_opts["bound_translation"],
+    #                                      high=self.f_opts["bound_translation"], size=(1, self.D))
 
-                    # sample scaling
-                    s = self.rng.uniform(low=1 - self.f_opts["bound_scaling"], high=1 + self.f_opts["bound_scaling"])
-            else:
-                    raise ValueError("Missspecified translation/scaling parameters!")
+    #                 # sample scaling
+    #                 s = self.rng.uniform(low=1 - self.f_opts["bound_scaling"], high=1 + self.f_opts["bound_scaling"])
+    #         else:
+    #                 raise ValueError("Missspecified translation/scaling parameters!")
 
-            self.f = lambda x: ackley_var(x, t=t, s=s)
+    #         self.f = lambda x: ackley_var(x, t=t, s=s)
 
-            max_pos, max, _, min = ackley_max_min_var(self.multistart_grid,dim=self.D,t=t, s=s)
-            self.x_max = max_pos
-            self.y_max = max
-            self.y_min = -5
-        elif self.f_type == "POWELL":
-            if "bound_translation" in self.f_opts:
-                    # sample translation
-                    t = self.rng.uniform(low=-self.f_opts["bound_translation"],
-                                         high=self.f_opts["bound_translation"], size=(1, self.D))
+    #         max_pos, max, _, min = ackley_max_min_var(self.multistart_grid,dim=self.D,t=t, s=s)
+    #         self.x_max = max_pos
+    #         self.y_max = max
+    #         self.y_min = -5
+    #     elif self.f_type == "POWELL":
+    #         if "bound_translation" in self.f_opts:
+    #                 # sample translation
+    #                 t = self.rng.uniform(low=-self.f_opts["bound_translation"],
+    #                                      high=self.f_opts["bound_translation"], size=(1, self.D))
 
-                    # sample scaling
-                    s = self.rng.uniform(low=1 - self.f_opts["bound_scaling"], high=1 + self.f_opts["bound_scaling"])
-            else:
-                    raise ValueError("Missspecified translation/scaling parameters!")
+    #                 # sample scaling
+    #                 s = self.rng.uniform(low=1 - self.f_opts["bound_scaling"], high=1 + self.f_opts["bound_scaling"])
+    #         else:
+    #                 raise ValueError("Missspecified translation/scaling parameters!")
 
-            self.f = lambda x: POWELL_var(x, t=t, s=s)
+    #         self.f = lambda x: POWELL_var(x, t=t, s=s)
 
-            max_pos, max, _, min = POWELL_max_min_var(self.multistart_grid,dim=self.D,t=t, s=s)
-            self.x_max = max_pos
-            self.y_max = max
-            self.y_min = -5
-        elif self.f_type == "egg":
-            if "bound_translation" in self.f_opts:
-                    # sample translation
-                    t = self.rng.uniform(low=-self.f_opts["bound_translation"],
-                                         high=self.f_opts["bound_translation"], size=(1, self.D))
+    #         max_pos, max, _, min = POWELL_max_min_var(self.multistart_grid,dim=self.D,t=t, s=s)
+    #         self.x_max = max_pos
+    #         self.y_max = max
+    #         self.y_min = -5
+    #     elif self.f_type == "egg":
+    #         if "bound_translation" in self.f_opts:
+    #                 # sample translation
+    #                 t = self.rng.uniform(low=-self.f_opts["bound_translation"],
+    #                                      high=self.f_opts["bound_translation"], size=(1, self.D))
 
-                    # sample scaling
-                    s = self.rng.uniform(low=1 - self.f_opts["bound_scaling"], high=1 + self.f_opts["bound_scaling"])
-            else:
-                    raise ValueError("Missspecified translation/scaling parameters!")
+    #                 # sample scaling
+    #                 s = self.rng.uniform(low=1 - self.f_opts["bound_scaling"], high=1 + self.f_opts["bound_scaling"])
+    #         else:
+    #                 raise ValueError("Missspecified translation/scaling parameters!")
 
-            self.f = lambda x: Eggholder_var(x, t=t, s=s)
+    #         self.f = lambda x: Eggholder_var(x, t=t, s=s)
 
-            max_pos, max, _, min = Eggholder_max_min_var(self.multistart_grid,t=t, s=s)
-            self.x_max = max_pos
-            self.y_max = max
-            self.y_min = -5
-        elif self.f_type == "GRIEWANK":
-            if "bound_translation" in self.f_opts:
-                    # sample translation
-                    t = self.rng.uniform(low=-self.f_opts["bound_translation"],
-                                         high=self.f_opts["bound_translation"], size=(1, self.D))
+    #         max_pos, max, _, min = Eggholder_max_min_var(self.multistart_grid,t=t, s=s)
+    #         self.x_max = max_pos
+    #         self.y_max = max
+    #         self.y_min = -5
+    #     elif self.f_type == "GRIEWANK":
+    #         if "bound_translation" in self.f_opts:
+    #                 # sample translation
+    #                 t = self.rng.uniform(low=-self.f_opts["bound_translation"],
+    #                                      high=self.f_opts["bound_translation"], size=(1, self.D))
 
-                    # sample scaling
-                    s = self.rng.uniform(low=1 - self.f_opts["bound_scaling"], high=1 + self.f_opts["bound_scaling"])
-            else:
-                    raise ValueError("Missspecified translation/scaling parameters!")
+    #                 # sample scaling
+    #                 s = self.rng.uniform(low=1 - self.f_opts["bound_scaling"], high=1 + self.f_opts["bound_scaling"])
+    #         else:
+    #                 raise ValueError("Missspecified translation/scaling parameters!")
 
-            self.f = lambda x: GRIEWANK_var(x, t=t, s=s)
+    #         self.f = lambda x: GRIEWANK_var(x, t=t, s=s)
 
-            max_pos, max, _, min = GRIEWANK_max_min_var(self.multistart_grid,self.D,t=t, s=s)
-            self.x_max = max_pos
-            self.y_max = max
-            self.y_min = -5
-        elif self.f_type == "DIXON_PRICE":
-            if "bound_translation" in self.f_opts:
-                    # sample translation
-                    t = self.rng.uniform(low=-self.f_opts["bound_translation"],
-                                         high=self.f_opts["bound_translation"], size=(1, self.D))
+    #         max_pos, max, _, min = GRIEWANK_max_min_var(self.multistart_grid,self.D,t=t, s=s)
+    #         self.x_max = max_pos
+    #         self.y_max = max
+    #         self.y_min = -5
+    #     elif self.f_type == "DIXON_PRICE":
+    #         if "bound_translation" in self.f_opts:
+    #                 # sample translation
+    #                 t = self.rng.uniform(low=-self.f_opts["bound_translation"],
+    #                                      high=self.f_opts["bound_translation"], size=(1, self.D))
 
-                    # sample scaling
-                    s = self.rng.uniform(low=1 - self.f_opts["bound_scaling"], high=1 + self.f_opts["bound_scaling"])
-            else:
-                    raise ValueError("Missspecified translation/scaling parameters!")
+    #                 # sample scaling
+    #                 s = self.rng.uniform(low=1 - self.f_opts["bound_scaling"], high=1 + self.f_opts["bound_scaling"])
+    #         else:
+    #                 raise ValueError("Missspecified translation/scaling parameters!")
 
-            self.f = lambda x: DIXON_PRICE_var(x, t=t, s=s)
+    #         self.f = lambda x: DIXON_PRICE_var(x, t=t, s=s)
 
-            max_pos, max, _, min = DIXON_PRICE_max_min_var(self.multistart_grid,self.D,t=t, s=s)
-            self.x_max = max_pos
-            self.y_max = max
-            self.y_min = -5
-        elif self.f_type == "STYBLINSKI_TANG":
-            if "bound_translation" in self.f_opts:
-                    # sample translation
-                    t = self.rng.uniform(low=-self.f_opts["bound_translation"],
-                                         high=self.f_opts["bound_translation"], size=(1, self.D))
+    #         max_pos, max, _, min = DIXON_PRICE_max_min_var(self.multistart_grid,self.D,t=t, s=s)
+    #         self.x_max = max_pos
+    #         self.y_max = max
+    #         self.y_min = -5
+    #     elif self.f_type == "STYBLINSKI_TANG":
+    #         if "bound_translation" in self.f_opts:
+    #                 # sample translation
+    #                 t = self.rng.uniform(low=-self.f_opts["bound_translation"],
+    #                                      high=self.f_opts["bound_translation"], size=(1, self.D))
 
-                    # sample scaling
-                    s = self.rng.uniform(low=1 - self.f_opts["bound_scaling"], high=1 + self.f_opts["bound_scaling"])
-            else:
-                    raise ValueError("Missspecified translation/scaling parameters!")
+    #                 # sample scaling
+    #                 s = self.rng.uniform(low=1 - self.f_opts["bound_scaling"], high=1 + self.f_opts["bound_scaling"])
+    #         else:
+    #                 raise ValueError("Missspecified translation/scaling parameters!")
 
-            self.f = lambda x: STYBLINSKI_TANG_var(x, t=t, s=s)
+    #         self.f = lambda x: STYBLINSKI_TANG_var(x, t=t, s=s)
 
-            max_pos, max, _, min = STYBLINSKI_TANG_max_min_var(self.multistart_grid,self.D,t=t, s=s)
-            self.x_max = max_pos
-            self.y_max = max
-            self.y_min = -5
-        elif self.f_type == "HPO": 
+    #         max_pos, max, _, min = STYBLINSKI_TANG_max_min_var(self.multistart_grid,self.D,t=t, s=s)
+    #         self.x_max = max_pos
+    #         self.y_max = max
+    #         self.y_min = -5
+    #     elif self.f_type == "HPO": 
             
-            if self.kwargs["f_opts"]["adapting"]:
-                self.dataset_counter = 0
-            else:
-                if not hasattr(self, "dataset_counter"):
-                    self.dataset_counter = 0
-                self.dataset_counter += 1
-                if self.dataset_counter >= len(self.kwargs["f_opts"]["data"]):
-                    self.dataset_counter = 0
+    #         if self.kwargs["f_opts"]["adapting"]:
+    #             self.dataset_counter = 0
+    #         else:
+    #             if not hasattr(self, "dataset_counter"):
+    #                 self.dataset_counter = 0
+    #             self.dataset_counter += 1
+    #             if self.dataset_counter >= len(self.kwargs["f_opts"]["data"]):
+    #                 self.dataset_counter = 0
 
             
-            self.pkl_data = pickle.load(open(self.kwargs["f_opts"]["data"][self.dataset_counter],"rb"))
+    #         self.pkl_data = pickle.load(open(self.kwargs["f_opts"]["data"][self.dataset_counter],"rb"))
             
 
-            self.xi_t = get_HPO_domain(data=self.pkl_data)
-            self.cardinality_xi_t = len(self.xi_t)
-            initial = self.rng.choice(np.arange(self.cardinality_xi_t),size=self.n_init_samples,replace=False)
-            self.initial_design = []
-            for init in initial:
-                self.initial_design.append(self.convert_idx_to_x(init))
-            self.initial_design = np.array(self.initial_design)
-            assert self.xi_t.shape[0] == self.cardinality_xi_t
+    #         self.xi_t = get_HPO_domain(data=self.pkl_data)
+    #         self.cardinality_xi_t = len(self.xi_t)
+    #         initial = self.rng.choice(np.arange(self.cardinality_xi_t),size=self.n_init_samples,replace=False)
+    #         self.initial_design = []
+    #         for init in initial:
+    #             self.initial_design.append(self.convert_idx_to_x(init))
+    #         self.initial_design = np.array(self.initial_design)
+    #         assert self.xi_t.shape[0] == self.cardinality_xi_t
 
-            self.f = lambda x: HPO(x, data=self.pkl_data)
+    #         self.f = lambda x: HPO(x, data=self.pkl_data)
 
-            max_pos, max, _, min = HPO_max_min(data=self.pkl_data)
-            self.x_max = max_pos
-            self.y_max = max
-            self.y_min = min
-        else:
-            raise ValueError("Unknown f_type!")
+    #         max_pos, max, _, min = HPO_max_min(data=self.pkl_data)
+    #         self.x_max = max_pos
+    #         self.y_max = max
+    #         self.y_min = min
+    #     else:
+    #         raise ValueError("Unknown f_type!")
 
-        if "metaTrainShot" in self.f_opts:
-            if 1 > len(self.shot_funcs):
-                dic = {"f":copy.deepcopy(self.f),
-                        "x_max":self.x_max,
-                        "y_max":self.y_max,
-                        "y_min":self.y_min}
-                self.shot_funcs.append(dic)
+    #     if "metaTrainShot" in self.f_opts:
+    #         if 1 > len(self.shot_funcs):
+    #             dic = {"f":copy.deepcopy(self.f),
+    #                     "x_max":self.x_max,
+    #                     "y_max":self.y_max,
+    #                     "y_min":self.y_min}
+    #             self.shot_funcs.append(dic)
 
-        assert self.y_max is not None  # we need this for the reward
-        assert self.y_min is not None  # we need this for the incumbent of empty training set
+    #     assert self.y_max is not None  # we need this for the reward
+    #     assert self.y_min is not None  # we need this for the incumbent of empty training set
 
     def reset_gp(self):
         # reset gp
@@ -478,7 +483,7 @@ class FSAF(gym.Env):
             self.X = self.Y = None
             X = np.zeros((1, self.D))
             Y = np.zeros((1, 1))
-        self.gp_is_empty = True
+        self.model_is_empty = True
         self.gp = GPy.models.gp_regression.GPRegression(X, Y,
                                                         noise_var=self.noise_variance,
                                                         kernel=self.kernel,
@@ -505,7 +510,7 @@ class FSAF(gym.Env):
     def update_gp(self):
         assert self.Y is not None
         self.gp.set_XY(self.X, self.Y)
-        self.gp_is_empty = False
+        self.model_is_empty = False
 
     def optimize_AF(self):
         if self.do_local_af_opt:
@@ -522,7 +527,7 @@ class FSAF(gym.Env):
         feature_count = 0
         idx = 0
         state = np.zeros((X.shape[0], self.n_features), dtype=np.float32)
-        gp_mean, gp_std = self.eval_gp(X)
+        gp_mean, gp_std = self.eval_model(X)
         if "posterior_mean" in self.features:
             feature_count += 1
             state[:, idx:idx + 1] = gp_mean.reshape(X.shape[0], 1)
@@ -635,23 +640,19 @@ class FSAF(gym.Env):
         assert self.af_maxima_t.shape[0] == self.cardinality_xi_local_t
 
     def get_incumbent(self):
-        if self.Y is None:
-            Y = np.array([self.y_min])
-        else:
-            Y = self.Y
 
-        incumbent = np.max(Y)
+        incumbent = np.max(self.model._Y)
         return incumbent
 
-    def eval_gp(self, X_star):
+    def eval_model(self, X_star):
         # evaluate the GP on X_star
         assert X_star.shape[1] == self.D
 
-        if self.gp_is_empty:
+        if self.model_is_empty:
             gp_mean = np.zeros((X_star.shape[0],))
             gp_var = self.kernel_variance * np.ones((X_star.shape[0],))
         else:
-            gp_mean, gp_var = self.gp.predict_noiseless(X_star)
+            gp_mean, gp_var = self.model.predict(X_star)
             gp_mean = gp_mean[:, 0]
             gp_var = gp_var[:, 0]
         gp_std = np.sqrt(gp_var)

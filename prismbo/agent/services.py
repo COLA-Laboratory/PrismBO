@@ -37,7 +37,7 @@ class Services:
         self._initialize_modules()
         self.process_info = Manager().dict()
         self.lock = Manager().Lock()
-        
+        self.multi_run = False
 
 
     def chat(self, user_input):
@@ -365,20 +365,30 @@ class Services:
         else:
             raise ValueError("Invalid dataset name")
 
+    def set_multi_run(self, data):
+        self.multi_run = data['is_multi']
+        
+
     def run_optimize(self):
         configurations = self.configer.get_configuration()
         seeds = configurations['seeds'].split(',')
         seeds = [int(seed) for seed in seeds]
         
         # Create a separate process for each seed
-        process_list = []
-        for seed in seeds:
-            p = Process(target=self._run_optimize_process, args=(int(seed), configurations))
-            process_list.append(p)
-            p.start()
-        
-        for p in process_list:
-            p.join()
+        if self.multi_run:
+            # Multi-process execution
+            process_list = []
+            for seed in seeds:
+                p = Process(target=self._run_optimize_process, args=(int(seed), configurations))
+                process_list.append(p)
+                p.start()
+            
+            for p in process_list:
+                p.join()
+        else:
+            # Single process execution
+            for seed in seeds:
+                self._run_optimize_process(int(seed), configurations)
         
     
     def _run_optimize_process(self, seed, configurations):
