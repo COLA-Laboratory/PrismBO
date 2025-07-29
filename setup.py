@@ -69,12 +69,12 @@ req = [
 ]
 
 setup(
-    name="transopt",
+    name="PrismBO",
     version="0.0.1",
-    author="transopt",
-    description="Transfer Optimiztion System",
+    author="PEILI MAO",
+    description="PrismBO",
     long_description="This is a longer description of my package.",
-    url="https://github.com/maopl/TransOpt.git",
+    url="https://github.com/maopl/PrismBO.git",
     classifiers=[
         "Development Status :: 3 - Alpha",
         "Intended Audience :: Developers",

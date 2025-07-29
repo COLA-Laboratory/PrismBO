@@ -59,15 +59,14 @@ def run_experiment(task_name, task_class, input_dim, workload, seed, n_iteration
 if __name__ == "__main__":
     # Experiment settings
     tasks = [
-        ('Sphere', Sphere, 10),
         ('Rastrigin', Rastrigin, 10),
         ('Schwefel', Schwefel, 10),
         ('Ackley', Ackley, 10),
         ('Griewank', Griewank, 10),
         ('Rosenbrock', Rosenbrock, 10),
     ]
-    workloads = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]  # Different workloads
-    seeds = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]  # Multiple seeds for repetition
+    workloads = [0, 1, 2, 3, 4, 5]  # Different workloads
+    seeds = [0, 1, 2, 3, 4, 5]  # Multiple seeds for repetition
     
     # Create results directory
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -121,6 +120,24 @@ if __name__ == "__main__":
                     'history': history
                 }
                 
+                # Save result immediately after each task completion
+                task_dir = os.path.join(results_dir, task_name)
+                os.makedirs(task_dir, exist_ok=True)
+                workload_dir = os.path.join(task_dir, f"workload_{workload}")
+                os.makedirs(workload_dir, exist_ok=True)
+                
+                filename = f"{task_name}_workload_{workload}_seed_{seed}.json"
+                filepath = os.path.join(workload_dir, filename)
+                
+                with open(filepath, 'w') as f:
+                    json.dump({
+                        'task_name': task_name,
+                        'workload': workload,
+                        'seed': seed,
+                        'result': result
+                    }, f, indent=2)
+                
+                print(f"Saved result to {filepath}")
                 
                 # result = run_experiment(task_name, task_class, input_dim, workload, seed)
                 workload_results.append({

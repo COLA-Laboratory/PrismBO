@@ -16,3 +16,4 @@ from prismbo.optimizer.model.mlp import MLP
 from prismbo.optimizer.model.deepkernelgp import DeepKernelGP
 from prismbo.optimizer.model.transformer import Transformer
 from prismbo.optimizer.model.hypergp import HyperGP
+from prismbo.optimizer.model.pfns4bo import PFNs4BO

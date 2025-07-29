@@ -21,7 +21,7 @@ def get_design_space():
     ])
     return space
 
-def run_experiment(task_name, task_class, input_dim, workload, seed, n_iterations=200):
+def run_experiment(task_name, task_class, input_dim, workload, seed, n_iterations=200, results_dir=None):
     # Create task instance
     global task
     task = task_class(
@@ -37,7 +37,7 @@ def run_experiment(task_name, task_class, input_dim, workload, seed, n_iteration
     design_space = get_design_space()
     
     # Initialize HEBO
-    opt = HEBO(design_space, scramble_seed=seed)
+    opt = HEBO(design_space)
     
     # Run optimization
     for i in range(n_iterations):
@@ -47,7 +47,7 @@ def run_experiment(task_name, task_class, input_dim, workload, seed, n_iteration
         y = np.array([[result['loss']]])
         opt.observe(rec, y)
     
-    # Collect optimization history
+    # Collect optimization historypip
     history = []
     for i in range(len(opt.y)):
         history.append({
@@ -55,6 +55,22 @@ def run_experiment(task_name, task_class, input_dim, workload, seed, n_iteration
             'params': opt.X[i].tolist(),
             'loss': float(opt.y[i][0])
         })
+    
+    result_data = {
+        'task_name': task_name,
+        'workload': workload,
+        'seed': seed,
+        'best_params': opt.X[opt.y.argmin()].tolist(),
+        'best_value': float(1 - opt.y.min()),
+        'history': history
+    }
+    
+    # Save result to JSON file
+    if results_dir:
+        filename = f"{results_dir}/{task_name}/workload_{workload}/{task_name}_workload_{workload}_seed_{seed}.json"
+        os.makedirs(os.path.dirname(filename), exist_ok=True)
+        with open(filename, 'w') as f:
+            json.dump(result_data, f, indent=2)
     
     return {
         'best_params': opt.X[opt.y.argmin()].tolist(),
@@ -65,15 +81,14 @@ def run_experiment(task_name, task_class, input_dim, workload, seed, n_iteration
 if __name__ == "__main__":
     # Experiment settings
     tasks = [
-        ('Sphere', Sphere, 10),
         ('Rastrigin', Rastrigin, 10),
         ('Schwefel', Schwefel, 10),
         ('Ackley', Ackley, 10),
         ('Griewank', Griewank, 10),
         ('Rosenbrock', Rosenbrock, 10),
     ]
-    workloads = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]  # Different workloads
-    seeds = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]  # Multiple seeds for repetition
+    workloads = [0, 1, 2, 3, 4, 5]  # Different workloads
+    seeds = [0, 1, 2, 3, 4, 5]  # Multiple seeds for repetition
     
     # Create results directory
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -88,7 +103,7 @@ if __name__ == "__main__":
             workload_results = []
             for seed in seeds:
                 print(f"Running {task_name} with workload {workload}, seed {seed}")
-                result = run_experiment(task_name, task_class, input_dim, workload, seed)
+                result = run_experiment(task_name, task_class, input_dim, workload, seed, results_dir=results_dir)
                 workload_results.append({
                     'seed': seed,
                     'result': result

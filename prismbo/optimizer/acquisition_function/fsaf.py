@@ -94,7 +94,7 @@ class AcquisitionFSAF(AcquisitionBase):
             "use_prior_mean_function": False,
             "local_af_opt": True,
                 "N_MS": 10000,
-                "N_S":990,
+                "N_S":2000,
                 "N_LS": 1000,
                 "k": 10,
             "reward_transformation": "neg_log10",  # true maximum not known
@@ -208,25 +208,11 @@ class AcquisitionFSAF(AcquisitionBase):
                 distr = Categorical(probs=prob_temp)
                 action = distr.sample()
             action = action.squeeze(0).cpu().numpy()
-        
-        return acqu.cpu().numpy()
-        # self.env.unwrapped.setAcqu(acqu)
-        
-        # new_x = self.convert_idx_to_x(action)
+        new_x = self.convert_idx_to_x(action)
+        self.env.unwrapped.setAcqu(acqu)
 
-        # # next_state, reward, done, _ = self.env.step(action)
+        return new_x, acqu.cpu().numpy().T
         
-        # self.next_new = new
-        # self.next_state = state
-        # self.next_value = value
-        
-
-        # m, s = self.model.predict(x)
-        # fmin = self.model.get_fmin()
-        # phi, Phi, u = get_quantiles(self.jitter, fmin, m, s)
-        # f_acqu_ei = s * (u * Phi + phi)
-
-        # return f_acqu_ei
 
     def _compute_acq_withGradients(self, x):
         # --- DEFINE YOUR AQUISITION (TO BE MAXIMIZED) AND ITS GRADIENT HERE HERE
@@ -302,4 +288,14 @@ class AcquisitionFSAF(AcquisitionBase):
     def convert_idx_to_x(self, idx):
         if not isinstance(idx, np.ndarray):
             idx = np.array([idx])
-        return self.xi_t[idx, :].reshape(idx.size, self.D)
+        return self.env.unwrapped.xi_t[idx, :].reshape(idx.size, self.env.unwrapped.D)
+    
+    
+    
+    def optimize(self, duplicate_manager=None):
+        """
+        Optimizes the acquisition function (uses a flag from the model to use gradients or not).
+        """
+        x, acqu = self._compute_acq(None)
+
+        return x, acqu

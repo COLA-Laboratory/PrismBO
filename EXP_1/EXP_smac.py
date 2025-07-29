@@ -4,8 +4,12 @@ import numpy as np
 import json
 import os
 from datetime import datetime
-from smac import HyperparameterOptimizationFacade, Scenario
 from prismbo.benchmark.synthetic.singleobj import *
+
+
+from smac.facade.smac_bb_facade import SMAC4BB
+from smac.scenario.scenario import Scenario
+
 
 def objective(configuration, seed: int = 0):
     # config_list = np.array([configuration.get(name) for name in task.configuration_space.variables_order])
@@ -31,8 +35,13 @@ def run_experiment(task_name, task_class, input_dim, workload, seed, n_iteration
     )
     
     config_space = get_configspace()
-    scenario = Scenario(config_space, deterministic=True, n_trials=n_iterations)
-    smac = HyperparameterOptimizationFacade(scenario, objective)
+        # Provide meta data for the optimization
+    scenario = Scenario({
+        "run_obj": "quality",  # Optimize quality (alternatively runtime)
+        "runcount-limit": n_iterations,  # Max number of function evaluations (the more the better)
+        "cs": config_space,
+    })
+    smac = SMAC4BB(scenario=scenario, tae_runner=objective)
     incumbent = smac.optimize()
     
     return {
@@ -42,15 +51,14 @@ def run_experiment(task_name, task_class, input_dim, workload, seed, n_iteration
 
 if __name__ == "__main__":
     tasks = [
-        ('Sphere', Sphere, 10),
         ('Rastrigin', Rastrigin, 10),
         ('Schwefel', Schwefel, 10),
         ('Ackley', Ackley, 10),
         ('Griewank', Griewank, 10),
         ('Rosenbrock', Rosenbrock, 10),
     ]
-    workloads = [0]  # [0-19]
-    seeds = [0]  # [0-19]
+    workloads = [0,1,2,3,4,5]  # [0-19]
+    seeds = [0,1,2,3,4,5]  # [0-19]
     
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     results_dir = f"results/smac_{timestamp}"
@@ -68,10 +76,34 @@ if __name__ == "__main__":
                     'seed': seed,
                     'result': result
                 })
+                
+                # 立即保存当前任务的结果
+                current_result = {
+                    'task_name': task_name,
+                    'workload': workload,
+                    'seed': seed,
+                    'result': result,
+                    'timestamp': datetime.now().isoformat()
+                }
+                
+                # 保存单个任务结果
+                single_result_file = f"{results_dir}/{task_name}/workload_{workload}/{task_name}_workload_{workload}_seed_{seed}.json"
+                os.makedirs(os.path.dirname(single_result_file), exist_ok=True)
+                with open(single_result_file, 'w') as f:
+                    json.dump(current_result, f, indent=2)
+                
+                print(f"Saved result to {single_result_file}")
+                
             task_results[f'workload_{workload}'] = workload_results
         all_results[task_name] = task_results
+        
+        # 每完成一个任务就保存累积的结果
+        with open(f"{results_dir}/results_{task_name}.json", 'w') as f:
+            json.dump(all_results, f, indent=2)
+        print(f"Saved cumulative results for {task_name}")
     
-    with open(f"{results_dir}/results.json", 'w') as f:
+    # 保存最终完整结果
+    with open(f"{results_dir}/results_complete.json", 'w') as f:
         json.dump(all_results, f, indent=2)
     
     for task_name in all_results:
