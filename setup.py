@@ -20,7 +20,7 @@ def get_extra_requirements(folder='./extra_requirements'):
     print(f"Extra requirements: {extra_requirements}")
     return extra_requirements
 
-extra_requirements = get_extra_requirements()
+# extra_requirements = get_extra_requirements()
 
 
 def build_docker_image(image_name, docker_dir):
@@ -48,8 +48,6 @@ req = [
     "torch",
     "torchvision",
     "gpytorch",
-    
-    # "GPy",
     "GPyOpt",
     "gym",
     "sobol-seq",
@@ -58,14 +56,38 @@ req = [
     "emukit",
     "pymoo",
     "jax",
-    "networkx",
     "gplearn",
     "oslo.concurrency>=4.2.0",
-    'GPy @ git+https://github.com/SheffieldML/GPy.git@devel',
-    'mmh3',
-    'rich',
-    'flask_cors',
-    'openai'
+    "GPy",
+    "mmh3",
+    "rich",
+    "tqdm",
+    "wilds",
+    "pyro-ppl",
+    "bohb-hpo",
+    "HEBO",
+    # "git+https://github.com/RobustBench/robustbench.git",
+    "hyperopt",
+    "flask_cors",
+    "openai",
+    "ViennaRNA",
+    "ml_collections",
+    "flax",
+    "shap",
+    "lime",
+    # botorch
+    # Analysis
+    "pandas",
+    "tikzplotlib",
+    "pdf2image",
+    "seaborn",
+    "Pillow",
+    "networkx",
+        
+    # Remote
+    "flask",
+    "requests",
+    "celery",
 ]
 
 setup(
@@ -84,7 +106,7 @@ setup(
     license="BSD",
     packages=find_packages(exclude=["hpobench"]),
     install_requires=req,
-    extras_require=extra_requirements,
+    # extras_require=extra_requirements,
     entry_points={
         'console_scripts': [
             'transopt-server = transopt.agent.app:main',

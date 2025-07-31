@@ -6,12 +6,11 @@ from prismbo.agent.registry import sampler_registry
 
 @sampler_registry.register("sobol")
 class SobolSampler(Sampler):
-    def sample(self, search_space, n_points = None, metadata = None, metadata_info = None):
-        self.n_samples = n_points
+    def sample(self, search_space, metadata = None, metadata_info = None):
         d = len(search_space.variables_order)
         sampler = qmc.Sobol(d=d, scramble=True)
-        sample_points = sampler.random(n=self.n_samples)
-        sample_points = sample_points.reshape(self.n_samples, d)
+        sample_points = sampler.random(n=self.init_num)
+        sample_points = sample_points.reshape(self.init_num, d)
         for i, name in enumerate(search_space.variables_order):
             var_range = search_space.ranges[name]
             if search_space.var_discrete[name]:

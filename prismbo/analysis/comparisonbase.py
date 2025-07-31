@@ -228,3 +228,21 @@ class ComparisonBase(abc.ABC, metaclass=abc.ABCMeta):
         list: A list of seeds.
         """
         return self._seeds
+    
+    
+
+class ShowDatasetInfo(abc.ABC, metaclass=abc.ABCMeta):
+    def __init__(self, datasets_name, data_manager):
+        self._datasets = datasets_name
+        self._all_data = {}
+        self._data_infos = {}
+        self.data_manager = data_manager
+        self.read_data_from_db()
+
+    def read_data_from_db(self):
+        for dataset_name in self._datasets:
+            data = self.data_manager.db.select_data(dataset_name)
+            self._all_data[dataset_name] = data
+            self._data_infos[dataset_name] = self.data_manager.db.query_dataset_info(dataset_name)
+    
+    

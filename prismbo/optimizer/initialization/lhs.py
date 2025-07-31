@@ -8,10 +8,10 @@ from prismbo.space.search_space import SearchSpace
 
 @sampler_registry.register("lhs")
 class LatinHypercubeSampler(Sampler):
-    def sample(self, search_space, n_points = None, metadata = None, metadata_info = None):
+    def sample(self, search_space, metadata = None, metadata_info = None):
         d = len(search_space.variables_order)
         sampler = qmc.LatinHypercube(d=d)
-        sample_points = sampler.random(n=self.n_samples)
+        sample_points = sampler.random(n=self.init_num)
         for i, name in enumerate(search_space.variables_order):
             var_range = search_space.ranges[name]
             if search_space.var_discrete[name]: 

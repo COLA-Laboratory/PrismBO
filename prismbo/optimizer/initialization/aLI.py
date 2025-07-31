@@ -7,14 +7,11 @@ from prismbo.agent.registry import sampler_registry
 
 @sampler_registry.register("aLI")
 class LearningInitialization(Sampler):
-    def sample(self, search_space, n_points = None, metadata = None, metadata_info = None):
-        if n_points is None:
-            n_points = len(search_space.variables_order) * 11
-            
+    def sample(self, search_space, metadata = None, metadata_info = None):
         if metadata is None or len(metadata) == 0:
             # If no metadata, use random sampling
             sampler = qmc.Sobol(d=len(search_space.variables_order))
-            sample_points = sampler.random(n=n_points)
+            sample_points = sampler.random(n=self.init_num)
             
             # Scale points to search space
             for i, name in enumerate(search_space.variables_order):
@@ -59,7 +56,7 @@ class LearningInitialization(Sampler):
         avg_predictions = np.mean(all_predictions, axis=0)
         
         # Select points with lowest predicted values
-        best_indices = np.argsort(avg_predictions.flatten())[:n_points]
+        best_indices = np.argsort(avg_predictions.flatten())[:self.init_num]
         sample_points = candidates[best_indices]
 
         return sample_points

@@ -25,7 +25,6 @@ class BO(OptimizerBase):
         self._Y = np.empty((0,))
         self.config = config
         self.search_space = None
-        self.ini_num = 10
         
         self.SpaceRefiner = Refiner
         self.Sampler = Sampler
@@ -58,7 +57,7 @@ class BO(OptimizerBase):
 
             
     def sample_initial_set(self, metadata = None, metadata_info = None):
-        return self.Sampler.sample(self.search_space, self.ini_num, metadata, metadata_info)
+        return self.Sampler.sample(self.search_space, metadata, metadata_info)
     
     def pretrain(self, metadata = None, metadata_info = None):
         if self.Pretrain:
