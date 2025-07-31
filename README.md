@@ -62,6 +62,7 @@ Please install these prerequisites if they are not already installed on your sys
    ```shell
    $ cd prismbo
    $ python setup.py install
+   $ pip install .
    ```
 
 3. Install the frontend dependencies:
