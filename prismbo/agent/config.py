@@ -1,10 +1,14 @@
 
 class ChatbotConfig:
     DEBUG = True
-    OPENAI_API_KEY = "sb-d19dea274ed2ed0b2539aa75920829d2d419a03504802d7c"
-    OPENAI_URL = "https://api.openai-sb.com/v1/"
+    OPENAI_API_KEY = "sk-RkYVrUuk7H05cHtO264f5b155b1b41FdB6D0C3C710704e9f"
+    OPENAI_URL = "https://aihubmix.com/v1"
 
 
+# class ChatbotConfig:
+#     DEBUG = True
+#     OPENAI_API_KEY="fk234446-IJvR9Dodv8uMLdbJMIIHxR9PFUz6VWeq"
+#     OPENAI_URL = "https://oa.api2d.net"
 
 import json
 import os
@@ -37,13 +41,15 @@ class Configer:
                     'AcquisitionFunction': {'type': 'EI', 'auxiliaryData': [], 'autoSelect': False},
                     'Pretrain': {'type': None, 'auxiliaryData': [], 'autoSelect': False},
                     'Model': {'type': 'GP', 'auxiliaryData': [], 'autoSelect': False},
-                    'Normalizer': {'type': 'Standard', 'auxiliaryData': [], 'autoSelect': False}
+                    'Normalizer': {'type': 'Standard', 'auxiliaryData': [], 'autoSelect': False},
+                    'Metadata': {'dataset': None}
                 })
                 self.seeds = config.get('seeds', '42')
                 self.remote = config.get('remote', False)
                 self.server_url = config.get('server_url', '')
                 self.exp_name = config.get('experimentName', '')
                 self.exp_description = config.get('experimentDescription', '')
+                self.metadata = config.get('Metadata', {'dataset': None})
         else:
             self.tasks = []
             self.optimizer = {
@@ -58,6 +64,7 @@ class Configer:
             self.server_url = ''
             self.exp_name = ''
             self.exp_description = ''
+            self.metadata = {'dataset': None}
             self._save_config()
 
     def _save_config(self):
@@ -106,3 +113,6 @@ class Configer:
                 'experimentName': config.get('experimentName', ''),
                 'experimentDescription': config.get('experimentDescription', '')
             }
+    
+    def set_tasks(self, problem_info):
+        self.tasks = problem_info

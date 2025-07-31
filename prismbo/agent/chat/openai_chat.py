@@ -1,8 +1,12 @@
 import json
 import subprocess
 import sys
+import time
+import re
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
+from dataclasses import dataclass
+from datetime import datetime
 
 import yaml
 from openai.types.chat.chat_completion import ChatCompletion
@@ -65,7 +69,7 @@ class OpenAIChat:
         self,
         api_key,
         model="gpt-3.5-turbo",
-        base_url="https://api.openai-sb.com/v1/",
+        base_url="https://aihubmix.com/v1",
         client_kwargs: Optional[Dict[str, Any]] = None,
         data_manager: Optional[DataManager] = None,
     ):
@@ -81,6 +85,25 @@ class OpenAIChat:
 
         self.data_manager = DataManager() if data_manager is None else data_manager
         self.running_config = Configer()
+        
+        # 初始化函数调用计数器
+        self.function_call_counts = {
+            "get_all_datasets": 0,
+            "get_dataset_info": 0,
+            "get_all_problems": 0,
+            "get_optimization_techniques": 0,
+            "set_optimization_problem": 0,
+            "set_space_refiner": 0,
+            "set_sampler": 0,
+            "set_pretrain": 0,
+            "set_model": 0,
+            "set_normalizer": 0,
+            "set_metadata": 0,
+            "run_optimization": 0,
+            "show_configuration": 0,
+            "install_package": 0,
+        }
+        self._initialize_modules()
 
     def _get_prompt(self):
         """Reads a prompt from a file."""
@@ -88,7 +111,27 @@ class OpenAIChat:
         file_path = current_dir / "prompt"
         with open(file_path, "r") as file:
             return file.read()
-        
+
+
+    def _initialize_modules(self):
+        import prismbo.benchmark.rnainversedesign
+        # import prismbo.benchmark.hpo.HPOB
+        # import prismbo.benchmark.hpo.HPOOOD
+        import prismbo.benchmark.hpo
+        import prismbo.benchmark.synthetic
+        import prismbo.benchmark.gym
+        try:
+            import prismbo.benchmark.csstuning
+        except:
+            logger.warning("CSSTuning module not found. Please install the CSSTuning package to use this functionality.")
+        import prismbo.optimizer.acquisition_function
+        import prismbo.optimizer.model
+        import prismbo.optimizer.normalizer
+        import prismbo.optimizer.pretrain
+        import prismbo.optimizer.refiner
+        import prismbo.optimizer.initialization
+        import prismbo.optimizer.selector
+
     @property
     def client(self):
         """Lazy initialization of the OpenAI client."""
@@ -353,6 +396,11 @@ class OpenAIChat:
         return response.choices[0].message.content 
     
     def call_manager_function(self, function_name, **kwargs):
+        # 增加函数调用计数
+        if function_name in self.function_call_counts:
+            self.function_call_counts[function_name] += 1
+            logger.debug(f"Function {function_name} called. Count: {self.function_call_counts[function_name]}")
+        
         available_functions = {
             "get_all_datasets": self.data_manager.get_all_datasets,
             "get_all_problems": self.get_all_problems,
@@ -560,3 +608,405 @@ class OpenAIChat:
         except subprocess.CalledProcessError as e:
             logger.error(f"Failed to install package '{package_name}': {e}")
             return f"Failed to install package '{package_name}'. Error: {str(e)}"
+    
+    def reset_function_call_counts(self):
+        """重置所有函数调用计数器"""
+        for function_name in self.function_call_counts:
+            self.function_call_counts[function_name] = 0
+        logger.debug("Function call counts reset to zero")
+    
+    def get_function_call_counts(self) -> Dict[str, int]:
+        """获取当前函数调用计数"""
+        return self.function_call_counts.copy()
+        
+
+@dataclass
+class TestResult:
+    """测试结果数据类"""
+    test_id: str
+    input_text: str
+    expected_function: Optional[str]
+    response: str
+    response_time: float
+    success: bool
+    error_message: Optional[str] = None
+    function_called: Optional[str] = None
+    user_rating: Optional[int] = None
+
+class ChatbotTester:
+    """Chatbot测试器"""
+    
+    def __init__(self, api_key: str, model: str = "gpt-4o-mini", base_url: str = "https://aihubmix.com/v1", case_number: int = 1):
+        self.chat = OpenAIChat(api_key=api_key, model=model, base_url=base_url)
+        self.results: List[TestResult] = []
+        self.case_number = case_number
+        
+        # 重置函数调用计数器
+        self.chat.reset_function_call_counts()
+        
+        # 定义测试用例
+        self.test_cases = self._define_test_cases()
+        
+    def _define_test_cases(self) -> List[Dict]:
+        """定义测试用例"""
+        # 导入测试用例生成函数
+        import sys
+        import os
+        sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', '..', 'EXP 3'))
+        from test_prompt import generate_test_cases
+        
+        cases = generate_test_cases(self.case_number)
+        
+        return cases
+    
+    def _extract_function_calls(self, response: str) -> List[str]:
+        """从函数调用计数器中提取被调用的函数"""
+        called_functions = []
+        current_counts = self.chat.get_function_call_counts()
+        
+        # 检查哪些函数的计数大于0，表示被调用了
+        for function_name, count in current_counts.items():
+            if count > 0:
+                called_functions.append(function_name)
+        
+        logger.debug(f"Detected function calls: {called_functions}")
+        return called_functions
+    
+    def _evaluate_success(self, test_case: Dict, response: str, function_called: List[str]) -> bool:
+        """评估测试是否成功"""
+        expected = test_case.get("expected_function")
+        if expected is None:
+            # 对于模糊输入，期望系统要求澄清
+            return "clarification" in response.lower() or "please clarify" in response.lower()
+        
+        if isinstance(expected, list):
+            # 复合问题，检查是否调用了所有期望的函数
+            return all(func in function_called for func in expected)
+        else:
+            # 单一函数调用
+            return expected in function_called
+    
+    def run_single_test(self, test_case: Dict) -> TestResult:
+        """运行单个测试"""
+        test_id = test_case["id"]
+        input_text = test_case["input"]
+        expected_function = test_case.get("expected_function")
+        
+        logger.info(f"Running test: {test_id}")
+        logger.info(f"Input: {input_text}")
+        
+        # 重置函数调用计数器
+        self.chat.reset_function_call_counts()
+        
+        # 记录开始时间
+        start_time = time.time()
+        
+        try:
+            # 获取响应
+            response = self.chat.get_response(input_text)
+            
+            # 计算响应时间
+            response_time = time.time() - start_time
+            
+            # 提取函数调用
+            function_called = self._extract_function_calls(response)
+            
+            # 评估成功
+            success = self._evaluate_success(test_case, response, function_called)
+            
+            result = TestResult(
+                test_id=test_id,
+                input_text=input_text,
+                expected_function=expected_function,
+                response=response,
+                response_time=response_time,
+                success=success,
+                function_called=function_called[0] if function_called else None
+            )
+            
+            logger.info(f"Test {test_id} completed. Success: {success}, Time: {response_time:.2f}s")
+            
+        except Exception as e:
+            response_time = time.time() - start_time
+            result = TestResult(
+                test_id=test_id,
+                input_text=input_text,
+                expected_function=expected_function,
+                response="",
+                response_time=response_time,
+                success=False,
+                error_message=str(e)
+            )
+            logger.error(f"Test {test_id} failed with error: {e}")
+        
+        return result
+    
+    def run_all_tests(self) -> Dict[str, Any]:
+        """运行所有测试"""
+        logger.info("Starting comprehensive chatbot testing...")
+        
+        for test_case in self.test_cases:
+            result = self.run_single_test(test_case)
+            self.results.append(result)
+        
+        return self.generate_report()
+    
+    def generate_report(self) -> Dict[str, Any]:
+        """生成测试报告"""
+        total_tests = len(self.results)
+        successful_tests = sum(1 for r in self.results if r.success)
+        success_rate = successful_tests / total_tests if total_tests > 0 else 0
+        
+        # 计算平均响应时间
+        avg_response_time = sum(r.response_time for r in self.results) / total_tests if total_tests > 0 else 0
+        
+        # 按类别分组统计
+        category_stats = {}
+        for result in self.results:
+            test_case = next(tc for tc in self.test_cases if tc["id"] == result.test_id)
+            category = test_case["category"]
+            if category not in category_stats:
+                category_stats[category] = {"total": 0, "success": 0}
+            category_stats[category]["total"] += 1
+            if result.success:
+                category_stats[category]["success"] += 1
+        
+        # 按输入类型分组统计
+        input_type_stats = {}
+        for result in self.results:
+            test_case = next(tc for tc in self.test_cases if tc["id"] == result.test_id)
+            input_type = test_case["input_type"]
+            if input_type not in input_type_stats:
+                input_type_stats[input_type] = {"total": 0, "success": 0}
+            input_type_stats[input_type]["total"] += 1
+            if result.success:
+                input_type_stats[input_type]["success"] += 1
+        
+        report = {
+            "timestamp": datetime.now().isoformat(),
+            "summary": {
+                "total_tests": total_tests,
+                "successful_tests": successful_tests,
+                "success_rate": success_rate,
+                "avg_response_time": avg_response_time
+            },
+            "category_performance": {
+                category: {
+                    "success_rate": stats["success"] / stats["total"],
+                    "total": stats["total"],
+                    "success": stats["success"]
+                }
+                for category, stats in category_stats.items()
+            },
+            "input_type_performance": {
+                input_type: {
+                    "success_rate": stats["success"] / stats["total"],
+                    "total": stats["total"],
+                    "success": stats["success"]
+                }
+                for input_type, stats in input_type_stats.items()
+            },
+            "detailed_results": [
+                {
+                    "test_id": r.test_id,
+                    "input": r.input_text,
+                    "expected_function": r.expected_function,
+                    "function_called": r.function_called,
+                    "success": r.success,
+                    "response_time": r.response_time,
+                    "error": r.error_message
+                }
+                for r in self.results
+            ]
+        }
+        
+        return report
+    
+    def print_report(self, report: Dict[str, Any]):
+        """打印测试报告"""
+        print("\n" + "="*60)
+        print("CHATBOT COMPREHENSIVE TEST REPORT")
+        print("="*60)
+        
+        summary = report["summary"]
+        print(f"\n📊 OVERALL PERFORMANCE:")
+        print(f"   Total Tests: {summary['total_tests']}")
+        print(f"   Successful: {summary['successful_tests']}")
+        print(f"   Success Rate: {summary['success_rate']:.2%}")
+        print(f"   Average Response Time: {summary['avg_response_time']:.2f}s")
+        
+        print(f"\n📈 CATEGORY PERFORMANCE:")
+        for category, stats in report["category_performance"].items():
+            print(f"   {category}: {stats['success_rate']:.2%} ({stats['success']}/{stats['total']})")
+        
+        print(f"\n🎯 INPUT TYPE PERFORMANCE:")
+        for input_type, stats in report["input_type_performance"].items():
+            print(f"   {input_type}: {stats['success_rate']:.2%} ({stats['success']}/{stats['total']})")
+        
+        print(f"\n📋 DETAILED RESULTS:")
+        for result in report["detailed_results"]:
+            status = "✅" if result["success"] else "❌"
+            print(f"   {status} {result['test_id']}: {result['input'][:50]}...")
+            if not result["success"]:
+                print(f"      Expected: {result['expected_function']}, Called: {result['function_called']}")
+        
+        print("\n" + "="*60)
+
+def test_openai_chat(case_number: int = 1):
+    """运行指定编号的chatbot测试"""
+    # 使用测试API密钥
+    api_key = "sk-RkYVrUuk7H05cHtO264f5b155b1b41FdB6D0C3C710704e9f"
+    
+    # 创建测试器
+    tester = ChatbotTester(api_key=api_key, model="gpt-4o-mini", base_url="https://aihubmix.com/v1", case_number=case_number)
+    
+    # 运行所有测试
+    report = tester.run_all_tests()
+    
+    # 打印报告
+    tester.print_report(report)
+    
+    # 保存报告到文件
+    report_file = f"chatbot_test_report_case_{case_number}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+    with open(report_file, 'w', encoding='utf-8') as f:
+        json.dump(report, f, indent=2, ensure_ascii=False)
+    
+    print(f"\n📄 Detailed report saved to: {report_file}")
+    
+    return report
+
+def test_all_cases():
+    """运行所有20个测试用例"""
+    # 使用测试API密钥
+    api_key = "sk-RkYVrUuk7H05cHtO264f5b155b1b41FdB6D0C3C710704e9f"
+    
+    all_reports = {}
+    case_report_files = {}  # 存储每个case的报告文件路径
+    overall_stats = {
+        "total_tests": 0,
+        "total_successful": 0,
+        "total_failed": 0,
+        "avg_response_time": 0,
+        "case_performance": {}
+    }
+    
+    print("🚀 Starting comprehensive testing of all 20 test cases...")
+    print("="*80)
+    
+    for case_number in range(1, 21):
+        print(f"\n📋 Running Test Case {case_number}/20...")
+        
+        try:
+            # 创建测试器
+            tester = ChatbotTester(api_key=api_key, model="gpt-3.5-turbo", base_url="https://aihubmix.com/v1", case_number=case_number)
+            
+            # 运行测试
+            report = tester.run_all_tests()
+            all_reports[f"case_{case_number}"] = report
+            
+            # 单独保存每个case的报告
+            case_report_file = f"test_case_{case_number}_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+            with open(case_report_file, 'w', encoding='utf-8') as f:
+                json.dump(report, f, indent=2, ensure_ascii=False)
+            case_report_files[f"case_{case_number}"] = case_report_file
+            print(f"📄 Case {case_number} report saved to: {case_report_file}")
+            
+            # 更新总体统计
+            summary = report["summary"]
+            overall_stats["total_tests"] += summary["total_tests"]
+            overall_stats["total_successful"] += summary["successful_tests"]
+            overall_stats["total_failed"] += (summary["total_tests"] - summary["successful_tests"])
+            overall_stats["avg_response_time"] += summary["avg_response_time"]
+            
+            # 记录每个case的性能
+            overall_stats["case_performance"][f"case_{case_number}"] = {
+                "success_rate": summary["success_rate"],
+                "avg_response_time": summary["avg_response_time"],
+                "total_tests": summary["total_tests"],
+                "successful_tests": summary["successful_tests"]
+            }
+            
+            print(f"✅ Case {case_number} completed - Success Rate: {summary['success_rate']:.2%}")
+            
+        except Exception as e:
+            print(f"❌ Case {case_number} failed with error: {e}")
+            
+            # 即使失败也保存错误报告
+            error_report = {
+                "timestamp": datetime.now().isoformat(),
+                "case_number": case_number,
+                "error": str(e),
+                "summary": {
+                    "total_tests": 0,
+                    "successful_tests": 0,
+                    "success_rate": 0.0,
+                    "avg_response_time": 0.0
+                }
+            }
+            case_report_file = f"test_case_{case_number}_error_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+            with open(case_report_file, 'w', encoding='utf-8') as f:
+                json.dump(error_report, f, indent=2, ensure_ascii=False)
+            case_report_files[f"case_{case_number}"] = case_report_file
+            print(f"📄 Case {case_number} error report saved to: {case_report_file}")
+            
+            overall_stats["case_performance"][f"case_{case_number}"] = {
+                "success_rate": 0.0,
+                "avg_response_time": 0.0,
+                "total_tests": 0,
+                "successful_tests": 0,
+                "error": str(e)
+            }
+    
+    # 计算总体平均响应时间
+    if overall_stats["total_tests"] > 0:
+        overall_stats["avg_response_time"] /= 20  # 20个case
+        overall_success_rate = overall_stats["total_successful"] / overall_stats["total_tests"]
+    else:
+        overall_success_rate = 0.0
+    
+    # 打印总体报告
+    print("\n" + "="*80)
+    print("🎯 COMPREHENSIVE TESTING SUMMARY")
+    print("="*80)
+    print(f"📊 Overall Performance:")
+    print(f"   Total Tests Across All Cases: {overall_stats['total_tests']}")
+    print(f"   Total Successful: {overall_stats['total_successful']}")
+    print(f"   Total Failed: {overall_stats['total_failed']}")
+    print(f"   Overall Success Rate: {overall_success_rate:.2%}")
+    print(f"   Average Response Time: {overall_stats['avg_response_time']:.2f}s")
+    
+    print(f"\n📈 Case-by-Case Performance:")
+    for case_num in range(1, 21):
+        case_key = f"case_{case_num}"
+        if case_key in overall_stats["case_performance"]:
+            perf = overall_stats["case_performance"][case_key]
+            status = "✅" if perf["success_rate"] >= 0.8 else "⚠️" if perf["success_rate"] >= 0.5 else "❌"
+            print(f"   {status} Case {case_num:2d}: {perf['success_rate']:.2%} ({perf['successful_tests']}/{perf['total_tests']}) - {perf['avg_response_time']:.2f}s")
+    
+    # 保存总体报告
+    comprehensive_report = {
+        "timestamp": datetime.now().isoformat(),
+        "overall_stats": overall_stats,
+        "all_reports": all_reports,
+        "case_report_files": case_report_files
+    }
+    
+    report_file = f"comprehensive_test_report_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+    with open(report_file, 'w', encoding='utf-8') as f:
+        json.dump(comprehensive_report, f, indent=2, ensure_ascii=False)
+    
+    print(f"\n📄 Comprehensive report saved to: {report_file}")
+    
+    return comprehensive_report
+
+if __name__ == "__main__":
+    import argparse
+    
+    parser = argparse.ArgumentParser(description='Run chatbot tests')
+    parser.add_argument('--case', type=int, default=1, help='Test case number (1-20)')
+    parser.add_argument('--all', action='store_true', help='Run all 20 test cases')
+    
+    args = parser.parse_args()
+    
+    print("Running all 20 test cases...")
+    test_all_cases()
