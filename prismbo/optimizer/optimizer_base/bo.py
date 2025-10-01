@@ -115,5 +115,13 @@ class BO(OptimizerBase):
         
     def meta_observe(self, metadata = None, searchspace_info = None):
         self.Model.meta_update()
+        
+    def reload_model(self, model):
+        self.Model = model
+        
+    def reload_acf(self, acf):
+        self.ACF = acf
+        self.ACF.link_model(model=self.Model)
+
 
 

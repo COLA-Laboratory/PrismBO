@@ -50,12 +50,14 @@ class DataManager:
         try:
             num_variables = dataset_info.get("num_variables", len(dataset_info["variables"]))
             num_objectives = dataset_info.get("num_objectives", len(dataset_info["objectives"]))
+            metafeatures = dataset_info.get("metafeatures", {})
+            description = metafeatures.get("description", "")
 
             variables = dataset_info["variables"]
             variable_names = " ".join([var["name"] for var in variables])
             
             task_name = dataset_info["additional_config"]['problem_name']
-            return (task_name, variable_names, num_variables, num_objectives)
+            return (task_name, description, variable_names, num_variables, num_objectives)
         except KeyError:
             logger.error(
                 f"""

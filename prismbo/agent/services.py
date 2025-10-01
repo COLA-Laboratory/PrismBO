@@ -14,7 +14,7 @@ from prismbo.benchmark.instantiate_problems import InstantiateProblems
 from prismbo.datamanager.manager import Database, DataManager
 from prismbo.optimizer.construct_optimizer import (ConstructOptimizer,
                                                     ConstructSelector)
-
+from prismbo.datamanager.bnf import parse_task_from_string
 from prismbo.utils.log import logger
 from prismbo.analysis.mds import FootPrint
 
@@ -288,14 +288,15 @@ class Services:
             {"name": var.name, "type": var.type, "range": var.range}
             for var_name, var in task_set.get_cur_fidelity_info().items()
         ]
-
+        
+        meta_features = parse_task_from_string(config.get('experimentDescription', ''))
         # Simplify dataset name construction
         timestamp = int(time.time())
         dataset_name = f"{task_set.get_curname()}_w{task_set.get_cur_workload()}_s{seed}_{timestamp}"
 
         dataset_info['additional_config'] = {
             "experimentName": config.get('experimentName', ''),
-            "experimentDescription": config.get('experimentDescription', ''),
+            "metafeatures": meta_features,
             "problem_name": task_set.get_curname(),
             "dim": len(dataset_info["variables"]),
             "obj": len(dataset_info["objectives"]),
@@ -340,14 +341,24 @@ class Services:
         else:
             return {}, {}
     
-    def get_autoselect(self, module_name):
+    def Ifautoselect(self, module_name):
         configuration = self.configer.get_configuration()
         autoselect = configuration['optimizer'][module_name]['autoSelect']
         return autoselect
     
-    
-    def auto_get_data(self, module_name):
-        return {}, {}
+    def auto_get_data(self, task_name, task_info):
+        datasets_list = list(self.data_manager.search_similar_datasets(task_info))
+        if len(datasets_list):
+            metadata = {}
+            metadata_info = {}
+            for dataset_name in datasets_list:
+                if dataset_name == task_name:
+                    continue
+                data = self.data_manager.db.select_data(dataset_name)
+                if len(data) > 0:
+                    metadata[dataset_name] = data
+                    metadata_info[dataset_name] = self.data_manager.db.query_dataset_info(dataset_name)
+        return metadata, metadata_info
     
     def save_data(self, dataset_name, parameters, observations, iteration):
         data = [{} for i in range(len(parameters))]
@@ -402,48 +413,49 @@ class Services:
             # Instantiate problems and optimizer
             task_set = InstantiateProblems(configurations['tasks'], seed)
             optimizer = ConstructOptimizer(configurations['optimizer'], seed)
-            dataselector = ConstructSelector(configurations['optimizer'], seed)
 
             while (task_set.get_unsolved_num()):
                 search_space = task_set.get_cur_searchspace()
-                dataset_info, dataset_name = self.construct_dataset_info(task_set, configurations, seed=seed)
+                task_info, task_name = self.construct_dataset_info(task_set, configurations, seed=seed)
                 
-                self.data_manager.create_dataset(dataset_name, dataset_info, overwrite=True)
-                self.update_process_info(pid, {'dataset_name': dataset_name, 'task': task_set.get_curname(), 'budget': task_set.get_cur_budget()})
+                self.data_manager.create_dataset(task_name, task_info, overwrite=True)
+                self.update_process_info(pid, {'dataset_name': task_name, 'task': task_set.get_curname(), 'budget': task_set.get_cur_budget()})
                 
                 optimizer.link_task(task_name=task_set.get_curname(), search_space=search_space)
 
                 #step1: initialization
                 metadata, metadata_info = self.get_metadata('Initialization')
-                autoselect = self.get_autoselect('Initialization')
+                autoselect = self.Ifautoselect('Initialization')
                 if autoselect:
-                    metadata, metadata_info = self.auto_get_data('Initialization')
+                    metadata, metadata_info = self.auto_get_data(task_name, task_info)
                 samples = optimizer.sample_initial_set(metadata, metadata_info)
                 
-                parameters = [optimizer.search_space.map_to_design_space(sample) for sample in samples]
+                parameters = [search_space.map_to_design_space(sample) for sample in samples]
+
                 observations = task_set.f(parameters)
-                self.save_data(dataset_name, parameters, observations, self.process_info[pid]['iteration'])
+
+                self.save_data(task_name, parameters, observations, self.process_info[pid]['iteration'])
                 optimizer.observe(samples, observations)
 
                 #step2: search space prune
                 metadata, metadata_info = self.get_metadata('SearchSpace')
-                autoselect = self.get_autoselect('SearchSpace')
+                autoselect = self.Ifautoselect('SearchSpace')
                 if autoselect:
-                    metadata, metadata_info = self.auto_get_data('SearchSpace')
+                    metadata, metadata_info = self.auto_get_data(task_name, task_info)
                 optimizer.search_space_refine(optimizer.search_space, metadata, metadata_info)
                 
                 #step3: pretrain
                 metadata, metadata_info = self.get_metadata('Pretrain')
-                autoselect = self.get_autoselect('Pretrain')
+                autoselect = self.Ifautoselect('Pretrain')
                 if autoselect:
-                    metadata, metadata_info = self.auto_get_data('Pretrain')
+                    metadata, metadata_info = self.auto_get_data(task_name, task_info)
                 optimizer.pretrain(metadata, metadata_info)
                 
                 #step4: meta-fit
                 metadata, metadata_info = self.get_metadata('Model')
-                autoselect = self.get_autoselect('Model')
+                autoselect = self.Ifautoselect('Model')
                 if autoselect:
-                    metadata, metadata_info = self.auto_get_data('Model')
+                    metadata, metadata_info = self.auto_get_data(task_name, task_info)
                 optimizer.meta_fit(metadata, metadata_info)
                 
                 cur_iter = 0
@@ -451,9 +463,9 @@ class Services:
                 
                 #step5: Acquisition Function
                 metadata, metadata_info = self.get_metadata('AcquisitionFunction')
-                autoselect = self.get_autoselect('AcquisitionFunction')
+                autoselect = self.Ifautoselect('AcquisitionFunction')
                 if autoselect:
-                    metadata, metadata_info = self.auto_get_data('AcquisitionFunction')
+                    metadata, metadata_info = self.auto_get_data(task_name, task_info)
                 optimizer.ACF_meta(metadata, metadata_info)
                 
                 while (task_set.get_rest_budget()):
@@ -463,7 +475,7 @@ class Services:
                     observations = task_set.f(parameters)
                     if observations is None:
                         break
-                    self.save_data(dataset_name, parameters, observations, self.process_info[pid]['iteration'])
+                    self.save_data(task_name, parameters, observations, self.process_info[pid]['iteration'])
                     optimizer.observe(suggested_samples, observations)
                     
                     cur_iter = self.process_info[pid]['iteration']
@@ -471,7 +483,10 @@ class Services:
                     self.update_process_info(pid, {'progress': 100 * (task_set.get_cur_budget() - task_set.get_rest_budget()) / task_set.get_cur_budget()})
                     logger.info(f"PID {pid}: Seed {seed}, Task {task_set.get_curname()}, Iteration {self.process_info[pid]['iteration']}")
                 task_set.roll()
-                optimizer.meta_observe({'X':optimizer._X, 'Y':optimizer._Y}, optimizer.search_space)
+                # optimizer.meta_observe({'X':optimizer._X, 'Y':optimizer._Y}, optimizer.search_space)
+                optimizer.reload_model(model_registry[configurations['optimizer']['Model']['type']](config = configurations['optimizer']['Model']['Parameters']))
+                optimizer.reload_acf(acf_registry[configurations['optimizer']['AcquisitionFunction']['type']](config = configurations['optimizer']['AcquisitionFunction']['Parameters']))
+                
         except Exception as e:
             logger.error(f"Error in process {pid}: {str(e)}")
             raise e

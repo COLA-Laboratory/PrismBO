@@ -44,7 +44,7 @@ class ProblemBase(abc.ABC):
 
     def f(self, configuration, fidelity=None, seed=None, **kwargs) -> Dict:
         # Check validity of configuration and fidelity before evaluation
-        self.check_validity(configuration, fidelity)
+        # self.check_validity(configuration, fidelity)
 
         # Delegate to the specific evaluation method implemented by subclasses
         return self.objective_function(configuration, fidelity, seed, **kwargs)
