@@ -69,32 +69,20 @@ class HPO_base(NonTabularProblem):
     workloads = []
     fidelity = None
     
-    ALGORITHMS = [
-        'ERM',
-        'ERM_JSD',
-        'ERM_ParaAUG',
-        'ERM_DGHPO',
-        # 'BayesianNN',
-        # 'GLMNet'
-    ]
-    
     ARCHITECTURES = SUPPORTED_ARCHITECTURES
     
     DATASETS = [
-    "RobCifar10",
-    "RobCifar100",
-    "ColoredMNIST",
-    "RobImageNet",
+    "Cifar10",
+    "Cifar100",
+    "MNIST",
+    "ImageNet",
     ]
 
     def __init__(
         self, task_name, budget_type, budget, seed, workload, algorithm, architecture, model_size, **kwargs
         ):
-        
-        # Check if algorithm is valid
-        if algorithm not in HPO_base.ALGORITHMS:
-            raise ValueError(f"Invalid algorithm: {algorithm}. Must be one of {HPO_base.ALGORITHMS}")
-        self.algorithm_name = algorithm
+
+        self.algorithm_name = 'ERM'
 
         # Check if workload is valid
         if workload < 0 or workload >= len(HPO_base.DATASETS):
@@ -167,18 +155,13 @@ class HPO_base(NonTabularProblem):
         print(f"Using device: {self.device}")
         
         if self.dataset_name in vars(datasets):
-            self.dataset = vars(datasets)[self.dataset_name](root=self.data_dir, augment=kwargs.get('augment', None))
+            self.dataset = vars(datasets)[self.dataset_name+'Wrapper'](root=self.data_dir, augment=kwargs.get('augment', None))
         else:
             raise NotImplementedError
-        if self.hparams.get('augment', None) == 'mixup':
-            self.mixup = True
-        else:
-            self.mixup = False
-        
         
         print(f"Using augment: {kwargs.get('augment', None)}")
         
-        self.eval_loaders, self.eval_loader_names = self.create_test_loaders(128)
+        self.eval_loaders = self.create_test_loaders(128)
 
         self.checkpoint_vals = collections.defaultdict(lambda: [])
         
@@ -203,21 +186,24 @@ class HPO_base(NonTabularProblem):
         if not hasattr(self, 'dataset') or self.dataset is None:
             raise ValueError("Dataset not initialized. Please ensure self.dataset is set before calling this method.")
         
-        eval_loaders = []
-        eval_loader_names = []
+        # eval_loaders = []
+        # eval_loader_names = []
 
         # Get all available test set names
-        available_test_sets = self.dataset.get_available_test_set_names()
+        # available_test_sets = self.dataset.get_available_test_set_names()
 
-        for test_set_name in available_test_sets:
-            if test_set_name.startswith('test_'):
-                eval_loaders.append(FastDataLoader(
-                    dataset=self.dataset.datasets[test_set_name],
-                    batch_size=batch_size,
-                    num_workers=2))  # Assuming N_WORKERS is 2, adjust if needed
-                eval_loader_names.append(test_set_name)
-
-        return eval_loaders, eval_loader_names
+        # for test_set_name in available_test_sets:
+        #     if test_set_name.startswith('test_'):
+        #         eval_loaders.append(FastDataLoader(
+        #             dataset=self.dataset.datasets[test_set_name],
+        #             batch_size=batch_size,
+        #             num_workers=2))  # Assuming N_WORKERS is 2, adjust if needed
+        #         eval_loader_names.append(test_set_name)
+        test_loader = FastDataLoader(
+            dataset=self.dataset.datasets['test'],
+            batch_size=batch_size,
+            num_workers=2)
+        return test_loader
     
 
     def save_checkpoint(self, filename):
@@ -413,7 +399,7 @@ class HPO_base(NonTabularProblem):
         self.filename = "_".join(filename_parts)
         
         algorithm_class = algorithms.get_algorithm_class(self.algorithm_name)
-        self.algorithm = algorithm_class(self.dataset.input_shape, self.dataset.num_classes, self.architecture, self.model_size, self.mixup, self.device, self.hparams)
+        self.algorithm = algorithm_class(self.dataset.input_shape, self.dataset.num_classes, self.architecture, self.model_size, self.device, self.hparams)
         self.algorithm.to(self.device)
         
         self.query_counter += 1
@@ -448,14 +434,14 @@ class HPO_base(NonTabularProblem):
         print(f'fidelity:{fidelity}')
         
         # Convert log scale values back to normal scale
-        c = self.configuration_space.map_to_design_space(configuration)
+        # c = self.configuration_space.map_to_design_space(configuration)
         
         # Add fidelity (epoch) to the configuration
-        c["epoch"] = fidelity["epoch"]        
-        c['class_balanced'] = True
-        c['nonlinear_classifier'] = True
+        configuration["epoch"] = fidelity["epoch"]        
+        configuration['class_balanced'] = True
+        configuration['nonlinear_classifier'] = True
         
-        val_acc, results = self.get_score(c)
+        val_acc, results = self.get_score(configuration)
 
         acc = {list(self.objective_info.keys())[0]: float(val_acc)}
         

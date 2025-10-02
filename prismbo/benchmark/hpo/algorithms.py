@@ -39,13 +39,13 @@ class Algorithm(torch.nn.Module):
     - update()
     - predict()
     """
-    def __init__(self, input_shape, num_classes, architecture, model_size, mixup, device, hparams):
+    def __init__(self, input_shape, num_classes, architecture, model_size, device, hparams):
         super(Algorithm, self).__init__()
         self.hparams = hparams
         self.architecture = architecture
         self.model_size = model_size
         self.device = device
-        self.mixup = mixup
+        self.mixup = None
         if self.mixup:
             self.mixup_alpha = self.hparams.get('mixup_alpha', 0.3)
 
@@ -67,8 +67,8 @@ class ERM(Algorithm):
     Empirical Risk Minimization (ERM)
     """
 
-    def __init__(self, input_shape, num_classes, architecture, model_size, mixup, device, hparams):
-        super(ERM, self).__init__(input_shape, num_classes, architecture, model_size,  mixup, device, hparams)
+    def __init__(self, input_shape, num_classes, architecture, model_size, device, hparams):
+        super(ERM, self).__init__(input_shape, num_classes, architecture, model_size,  device, hparams)
         self.featurizer = networks.Featurizer(input_shape, architecture, model_size, self.hparams)
         print(self.featurizer.n_outputs)
         self.classifier = networks.Classifier(
@@ -123,8 +123,8 @@ class ERM_ParaAUG(Algorithm):
     Empirical Risk Minimization (ERM)
     """
 
-    def __init__(self, input_shape, num_classes, architecture, model_size, mixup, device, hparams):
-        super(ERM_ParaAUG, self).__init__(input_shape, num_classes, architecture, model_size,  mixup, device, hparams)
+    def __init__(self, input_shape, num_classes, architecture, model_size, device, hparams):
+        super(ERM_ParaAUG, self).__init__(input_shape, num_classes, architecture, model_size,  device, hparams)
         self.featurizer = networks.Featurizer(input_shape, architecture, model_size, self.hparams)
         print(self.featurizer.n_outputs)
         self.classifier = networks.Classifier(
@@ -164,8 +164,8 @@ class ERM_ParaAUG(Algorithm):
 class ERM_JSD(Algorithm):
     """ERM with additional penalty term. Currently supports JSD penalty."""
     
-    def __init__(self, input_shape, num_classes, architecture, model_size, mixup, device, hparams, penalty='jsd'):
-        super(ERM_JSD, self).__init__(input_shape, num_classes, architecture, model_size, mixup, device, hparams)
+    def __init__(self, input_shape, num_classes, architecture, model_size, device, hparams, penalty='jsd'):
+        super(ERM_JSD, self).__init__(input_shape, num_classes, architecture, model_size, device, hparams)
         self.penalty = penalty
         self.featurizer = networks.Featurizer(input_shape, architecture, model_size, self.hparams)
         self.classifier = networks.Classifier(
@@ -248,8 +248,8 @@ class GLMNet(Algorithm):
     Generalized Linear Model with Elastic Net Regularization (GLMNet)
     """
 
-    def __init__(self, input_shape, num_classes, architecture, model_size, mixup, device, hparams):
-        super(GLMNet, self).__init__(input_shape, num_classes, architecture, model_size,  mixup, device, hparams)
+    def __init__(self, input_shape, num_classes, architecture, model_size, device, hparams):
+        super(GLMNet, self).__init__(input_shape, num_classes, architecture, model_size,  device, hparams)
         self.featurizer = networks.Featurizer(input_shape, architecture, model_size, self.hparams)
         self.num_classes = num_classes
         

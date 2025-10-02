@@ -24,14 +24,13 @@ from prismbo.space.search_space import SearchSpace
 from prismbo.space.variable import *
 from prismbo.benchmark.hpo import algorithms
 from prismbo.benchmark.hpo.hparams_registry import get_hparam_space, get_subpolicy_num
-from prismbo.benchmark.hpo.networks import SUPPORTED_ARCHITECTURES
 from prismbo.benchmark.hpo.augmentation import SamplerPolicy
 from torch.utils.data import TensorDataset
 from prismbo.benchmark.hpo.hpo_base import HPO_base
 
 
-@problem_registry.register("HPO_ResNet")
-class HPO_ResNet(HPO_base):    
+@problem_registry.register("HPO_ResNet18")
+class HPO_ResNet18(HPO_base):    
     def __init__(
         self, task_name, budget_type, budget, seed, workload, **kwargs
         ):            
@@ -41,7 +40,32 @@ class HPO_ResNet(HPO_base):
         optimizer = kwargs.pop('optimizer', 'random')
         base_dir = kwargs.pop('base_dir', os.path.expanduser('~'))
         
-        super(HPO_ResNet, self).__init__(
+        super(HPO_ResNet18, self).__init__(
+            task_name=task_name, 
+            budget_type=budget_type, 
+            budget=budget, 
+            seed=seed, 
+            workload=workload, 
+            algorithm=algorithm, 
+            architecture=architecture, 
+            model_size=model_size,
+            optimizer=optimizer,
+            base_dir=base_dir,
+            **kwargs
+        )
+
+@problem_registry.register("HPO_ResNet32")
+class HPO_ResNet32(HPO_base):    
+    def __init__(
+        self, task_name, budget_type, budget, seed, workload, **kwargs
+        ):            
+        algorithm = kwargs.pop('algorithm', 'ERM')
+        architecture = kwargs.pop('architecture', 'resnet')
+        model_size = kwargs.pop('model_size', 32)
+        optimizer = kwargs.pop('optimizer', 'random')
+        base_dir = kwargs.pop('base_dir', os.path.expanduser('~'))
+        
+        super(HPO_ResNet32, self).__init__(
             task_name=task_name, 
             budget_type=budget_type, 
             budget=budget, 

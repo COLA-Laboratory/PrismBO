@@ -102,6 +102,136 @@ class Dataset:
 
     def __len__(self):
         return len(self.datasets)
+    
+
+class Cifar10Wrapper(Dataset):
+    def __init__(self, root, augment=False):
+        super().__init__()
+        if root is None:        
+            user_home = os.path.expanduser('~')
+            root = os.path.join(user_home, 'prismbo_tmp/data')
+
+        self.datasets = {}
+        # Load original CIFAR-10 dataset
+        original_dataset_tr = CIFAR10(root, train=True, download=True)
+        original_dataset_te = CIFAR10(root, train=False, download=True)
+
+        original_images = original_dataset_tr.data
+        original_labels = torch.tensor(original_dataset_tr.targets)
+
+        shuffle = torch.randperm(len(original_images))
+        original_images = original_images[shuffle]
+        original_labels = original_labels[shuffle]
+        
+
+        self.normalized = data_transform('cifar10', None)
+        
+        normalized_images = torch.stack([self.normalized(img) for img in original_images])
+        test_images = torch.stack([self.normalized(img) for img in original_dataset_te.data])
+
+        # Split into train and validation sets
+        val_size = len(original_images) // 10
+        self.datasets['train'] = TensorDataset(normalized_images[:-val_size], original_labels[:-val_size])
+        self.datasets['val'] = TensorDataset(normalized_images[-val_size:], original_labels[-val_size:])
+        
+        self.datasets['test'] = TensorDataset(test_images, torch.tensor(original_dataset_te.targets))
+        
+        self.input_shape = (3, 32, 32)
+        self.num_classes = 10
+
+class Cifar100Wrapper(Dataset):
+    def __init__(self, root, augment=False):
+        super().__init__()
+        self.datasets = {}
+        original_dataset_tr = CIFAR100(root, train=True, download=True)
+        original_dataset_te = CIFAR100(root, train=False, download=True)
+
+        original_images = original_dataset_tr.data
+        original_labels = torch.tensor(original_dataset_tr.targets)
+
+        shuffle = torch.randperm(len(original_images))
+        original_images = original_images[shuffle]
+        original_labels = original_labels[shuffle]
+        
+
+        self.normalized = data_transform('cifar100', None)
+        
+        normalized_images = torch.stack([self.normalized(img) for img in original_images])
+        test_images = torch.stack([self.normalized(img) for img in original_dataset_te.data])
+
+        # Split into train and validation sets
+        val_size = len(original_images) // 10
+        self.datasets['train'] = TensorDataset(normalized_images[:-val_size], original_labels[:-val_size])
+        self.datasets['val'] = TensorDataset(normalized_images[-val_size:], original_labels[-val_size:])
+        
+        self.datasets['test'] = TensorDataset(test_images, torch.tensor(original_dataset_te.targets))
+        
+        self.input_shape = (3, 32, 32)
+        self.num_classes = 100
+
+class MNISTWrapper(Dataset):
+    def __init__(self, root, augment=False):
+        super().__init__()
+        self.datasets = {}
+        original_dataset_tr = MNIST(root, train=True, download=True)
+        original_dataset_te = MNIST(root, train=False, download=True)
+
+        original_images = original_dataset_tr.data
+        original_labels = torch.tensor(original_dataset_tr.targets)
+
+        shuffle = torch.randperm(len(original_images))
+        original_images = original_images[shuffle]
+        original_labels = original_labels[shuffle].long()
+        
+
+        self.normalized = data_transform('mnist', None)
+        
+        normalized_images = torch.stack([self.normalized(img) for img in original_images])
+        test_images = torch.stack([self.normalized(img) for img in original_dataset_te.data])
+
+        # Split into train and validation sets
+        val_size = len(original_images) // 10
+        self.datasets['train'] = TensorDataset(normalized_images[:-val_size], original_labels[:-val_size])
+        self.datasets['val'] = TensorDataset(normalized_images[-val_size:], original_labels[-val_size:])
+        
+        self.datasets['test'] = TensorDataset(test_images, torch.tensor(original_dataset_te.targets))
+        
+        self.input_shape = (1, 28, 28)
+        self.num_classes = 10
+
+class ImageNetWrapper(Dataset):
+    def __init__(self, root, augment=False):
+        super().__init__()
+        self.datasets = {}
+        original_dataset_tr = ImageNet(root, split='train', download=True)
+        original_dataset_te = ImageNet(root, split='test', download=True)
+
+        original_images = original_dataset_tr.data
+        original_labels = torch.tensor(original_dataset_tr.targets)
+
+        shuffle = torch.randperm(len(original_images))
+        original_images = original_images[shuffle]
+        original_labels = original_labels[shuffle]
+        
+
+        self.normalized = data_transform('imagenet', None)
+        
+        normalized_images = torch.stack([self.normalized(img) for img in original_images])
+        test_images = torch.stack([self.normalized(img) for img in original_dataset_te.data])
+
+        # Split into train and validation sets
+        val_size = len(original_images) // 10
+        self.datasets['train'] = TensorDataset(normalized_images[:-val_size], original_labels[:-val_size])
+        self.datasets['val'] = TensorDataset(normalized_images[-val_size:], original_labels[-val_size:])
+        
+        self.datasets['test'] = TensorDataset(test_images, torch.tensor(original_dataset_te.targets))
+        
+        self.input_shape = (3, 224, 224)
+        self.num_classes = 1000
+
+
+
+
 class MultipleDomainDataset:
     N_STEPS = 5001           # Default, subclasses may override
     CHECKPOINT_FREQ = 100    # Default, subclasses may override
@@ -427,6 +557,7 @@ class RobCifar100(Dataset):
         Return all available test sets.
         """
         return self.datasets
+
 
 class RobImageNet(Dataset):
     def __init__(self, root, augment=False):
