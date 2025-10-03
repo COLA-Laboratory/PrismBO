@@ -363,7 +363,7 @@ const Experiment = () => {
             initialValues={
               {
                 server_url: "",
-                experimentDescription: "",
+                // experimentDescription: "",
                 experimentName: ""
               }
             }
@@ -385,7 +385,7 @@ const Experiment = () => {
             />
           </Form.Item>
 
-          <Form.Item
+          {/* <Form.Item
               name="experimentDescription"
               style={{ marginBottom: '16px' }} // Add margin bottom
           >
@@ -398,7 +398,7 @@ const Experiment = () => {
                   resize: 'vertical', // Allow vertical resizing only
                 }}
             />
-          </Form.Item>
+          </Form.Item> */}
           <Form.Item>
             <SelectTask data={tasksData}
                         // updateTable={setTasksData}

@@ -37,6 +37,7 @@ def InstantiateProblems(
                     seed=seed,
                     workloads=workloads,
                     params=params,
+                    description=task.get("description", ""),
                 )
             for problem in problem.generate_benchmarks():
                 transfer_problems.add_task(problem)
@@ -56,6 +57,7 @@ def InstantiateProblems(
                     seed=seed,
                     workload=workload,
                     params=params,
+                    description=task.get("description", ""),
                 )
                 
                 transfer_problems.add_task(problem)

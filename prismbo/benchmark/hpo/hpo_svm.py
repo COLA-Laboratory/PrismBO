@@ -39,7 +39,7 @@ class SupportVectorMachine(NonTabularProblem):
     fidelity = None
 
     def __init__(
-        self, task_name, budget_type, budget, seed, workload, **kwargs
+        self, task_name, budget_type, budget, seed, workload, description, **kwargs
     ):
         """
         Parameters
@@ -53,6 +53,7 @@ class SupportVectorMachine(NonTabularProblem):
             budget_type=budget_type,
             seed=seed,
             workload=workload,
+            description=description,
         )
         task_type='non-tabular'
         self.task_id = SupportVectorMachine.task_lists[workload]

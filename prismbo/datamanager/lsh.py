@@ -83,11 +83,11 @@ class LSHCache:
             return set()
         similar_items = set()
         combined_fp = []
-        for dimension in vector[:2]:  # Only take the first two string dimensions
+        for dimension in vector[:3]:  # Only take the first two string dimensions
             combined_fp.extend(self.hasher.fingerprint(dimension))
 
-        num_variables = vector[2]
-        num_objectives = vector[3]
+        num_variables = vector[3]
+        num_objectives = vector[4]
 
         # Check for similarity across all bands
         for band_idx in range(self.num_bands):

@@ -22,6 +22,7 @@ class NonTabularProblem(ProblemBase):
         budget_type,
         budget: int,
         workload,
+        description: str = "",
         seed: Union[int, np.random.RandomState, None] = None,
         **kwargs,
     ):
@@ -30,7 +31,8 @@ class NonTabularProblem(ProblemBase):
         self.workload = workload
         self.lock_flag = False
         self.budget_type = budget_type
-
+        self.description = description
+        
         super(NonTabularProblem, self).__init__(seed, **kwargs)
 
     def get_budget_type(self) -> str:
@@ -87,6 +89,9 @@ class NonTabularProblem(ProblemBase):
 
         """
         return self.num_variables
+    
+    def get_description(self) -> str:
+        return self.description
 
     def get_objective_num(self) -> int:
         return self.num_objectives

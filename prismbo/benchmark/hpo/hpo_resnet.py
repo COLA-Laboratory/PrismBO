@@ -32,7 +32,7 @@ from prismbo.benchmark.hpo.hpo_base import HPO_base
 @problem_registry.register("HPO_ResNet18")
 class HPO_ResNet18(HPO_base):    
     def __init__(
-        self, task_name, budget_type, budget, seed, workload, **kwargs
+        self, task_name, budget_type, budget, seed, workload, description, **kwargs
         ):            
         algorithm = kwargs.pop('algorithm', 'ERM')
         architecture = kwargs.pop('architecture', 'resnet')
@@ -51,13 +51,14 @@ class HPO_ResNet18(HPO_base):
             model_size=model_size,
             optimizer=optimizer,
             base_dir=base_dir,
+            description=description,
             **kwargs
         )
 
 @problem_registry.register("HPO_ResNet32")
 class HPO_ResNet32(HPO_base):    
     def __init__(
-        self, task_name, budget_type, budget, seed, workload, **kwargs
+        self, task_name, budget_type, budget, seed, workload, description, **kwargs
         ):            
         algorithm = kwargs.pop('algorithm', 'ERM')
         architecture = kwargs.pop('architecture', 'resnet')
@@ -76,5 +77,6 @@ class HPO_ResNet32(HPO_base):
             model_size=model_size,
             optimizer=optimizer,
             base_dir=base_dir,
+            description=description,
             **kwargs
         )

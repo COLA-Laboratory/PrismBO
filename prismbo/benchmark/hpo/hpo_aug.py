@@ -480,7 +480,7 @@ class HPO_base(NonTabularProblem):
 @problem_registry.register("HPO_ERM")
 class HPO_ERM(HPO_base):    
     def __init__(
-        self, task_name, budget_type, budget, seed, workload, **kwargs
+        self, task_name, budget_type, budget, seed, workload, description, **kwargs
         ):            
         algorithm = kwargs.pop('algorithm', 'ERM')
         architecture = kwargs.pop('architecture', 'resnet')
@@ -499,13 +499,14 @@ class HPO_ERM(HPO_base):
             model_size=model_size,
             optimizer=optimizer,
             base_dir=base_dir,
+            description=description,
             **kwargs
         )
 
 @problem_registry.register("HPO_ERM_JSD")
-class HPO_ERM_JSD(HPO_base):    
+class HPO_ERM_JSD(HPO_base):        
     def __init__(
-        self, task_name, budget_type, budget, seed, workload, **kwargs
+        self, task_name, budget_type, budget, seed, workload, description, **kwargs
         ):            
         algorithm = kwargs.pop('algorithm', 'ERM')
         architecture = kwargs.pop('architecture', 'resnet')
@@ -524,6 +525,7 @@ class HPO_ERM_JSD(HPO_base):
             model_size=model_size,
             optimizer=optimizer,
             base_dir=base_dir,
+            description=description,
             **kwargs
         )
         
@@ -535,7 +537,7 @@ class HPO_ERM_JSD(HPO_base):
 @problem_registry.register("DGHPO_ERM")
 class DGHPO_ERM(HPO_base):    
     def __init__(
-        self, task_name, budget_type, budget, seed, workload, **kwargs
+        self, task_name, budget_type, budget, seed, workload, description, **kwargs
         ):            
         algorithm = kwargs.pop('algorithm', 'ERM')
         architecture = kwargs.pop('architecture', 'resnet')
@@ -554,6 +556,7 @@ class DGHPO_ERM(HPO_base):
             model_size=model_size,
             optimizer=optimizer,
             base_dir=base_dir,
+            description=description,
             **kwargs
         )
         

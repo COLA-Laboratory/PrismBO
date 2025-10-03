@@ -37,6 +37,7 @@ table_descriptions = {
         model varchar(50),
         acf varchar(50),
         normalizer varchar(50),
+        desc varchar(50),
         metafeatures varchar(50),
         dataset_selectors json,
         PRIMARY KEY (table_name)
@@ -380,15 +381,14 @@ class Database:
         self.execute(
             f"""
             INSERT INTO _metadata (
-                table_name, problem_name, dimensions, objectives, fidelities, workloads, budget_type, budget, seeds,
-                space_refiner, sampler, pretrain, model, acf, normalizer, metafeatures, dataset_selectors
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                table_name, problem_name, dimensions, objectives, fidelities, workloads, budget_type, budget, seeds, space_refiner, sampler, pretrain, model, acf, normalizer, desc, metafeatures, dataset_selectors
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT (table_name) DO UPDATE SET
                 problem_name = EXCLUDED.problem_name, dimensions = EXCLUDED.dimensions, objectives = EXCLUDED.objectives, 
                 fidelities = EXCLUDED.fidelities, workloads = EXCLUDED.workloads, budget_type = EXCLUDED.budget_type,
                 budget = EXCLUDED.budget, seeds = EXCLUDED.seeds, space_refiner = EXCLUDED.space_refiner,
                 sampler = EXCLUDED.sampler, pretrain = EXCLUDED.pretrain, model = EXCLUDED.model, 
-                acf = EXCLUDED.acf, normalizer = EXCLUDED.normalizer, metafeatures = EXCLUDED.metafeatures, dataset_selectors = EXCLUDED.dataset_selectors
+                acf = EXCLUDED.acf, normalizer = EXCLUDED.normalizer, desc = EXCLUDED.desc, metafeatures = EXCLUDED.metafeatures, dataset_selectors = EXCLUDED.dataset_selectors
             """,
             (
                 table_name,
@@ -406,6 +406,7 @@ class Database:
                 metadata.get("Model", ""),
                 metadata.get("ACF", ""),
                 metadata.get("Normalizer", ""),
+                metadata.get("desc", ""),
                 metadata.get("metafeatures", ""),
                 dataset_selectors_json,
             ),

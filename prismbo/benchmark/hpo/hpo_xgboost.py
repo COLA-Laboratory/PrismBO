@@ -33,7 +33,7 @@ class XGBoostBenchmark(NonTabularProblem):
     workloads = []
     fidelity = None
     def __init__(
-        self, task_name, budget_type, budget, seed, workload, **kwargs
+        self, task_name, budget_type, budget, seed, workload, description, **kwargs
     ):
         """
 
@@ -49,6 +49,7 @@ class XGBoostBenchmark(NonTabularProblem):
             budget_type=budget_type,
             seed=seed,
             workload=workload,
+            description=description,
         )
         self.task_id = XGBoostBenchmark.task_lists[workload]
         if torch.cuda.is_available():

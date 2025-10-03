@@ -143,7 +143,7 @@ class HPO_PINN(NonTabularProblem):
     fidelity = None
     
     def __init__(
-        self, task_name, budget_type, budget, seed, workload, **kwargs
+        self, task_name, budget_type, budget, seed, workload, description, **kwargs
         ):            
         algorithm = 'MSE'
         architecture ='MLP'
@@ -160,6 +160,7 @@ class HPO_PINN(NonTabularProblem):
             budget_type=budget_type,
             seed=seed,
             workload=workload,
+            description=description,
         )
         
         self.query_counter = kwargs.get('query_counter', 0)

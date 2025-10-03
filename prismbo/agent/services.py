@@ -274,37 +274,38 @@ class Services:
         experiment_tables = self.data_manager.db.get_table_list()
         return [(experiment_tables[table_id],self.data_manager.db.query_dataset_info(table)) for table_id, table in enumerate(experiment_tables)] 
    
-    def construct_dataset_info(self, task_set, config, seed):
+    def construct_dataset_info(self, task, config, seed):
         dataset_info = {}
         dataset_info["variables"] = [
             {"name": var.name, "type": var.type, "range": var.range}
-            for var_name, var in task_set.get_cur_searchspace_info().items()
+            for var_name, var in task.configuration_space.get_design_variables().items()
         ]
         dataset_info["objectives"] = [
             {"name": name, "type": type}
-            for name, type in task_set.get_curobj_info().items()
+            for name, type in task.get_objectives().items()
         ]
         dataset_info["fidelities"] = [
             {"name": var.name, "type": var.type, "range": var.range}
-            for var_name, var in task_set.get_cur_fidelity_info().items()
+            for var_name, var in task.fidelity_space.get_fidelity_range().items()
         ]
         
         meta_features = parse_task_from_string(config.get('experimentDescription', ''))
         # Simplify dataset name construction
         timestamp = int(time.time())
-        dataset_name = f"{task_set.get_curname()}_w{task_set.get_cur_workload()}_s{seed}_{timestamp}"
+        dataset_name = f"{task.get_name()}_w{task.workload}_s{seed}_{timestamp}"
 
         dataset_info['additional_config'] = {
             "experimentName": config.get('experimentName', ''),
+            'desc': task.get_description(),
             "metafeatures": meta_features,
-            "problem_name": task_set.get_curname(),
+            "problem_name": task.get_name(),
             "dim": len(dataset_info["variables"]),
             "obj": len(dataset_info["objectives"]),
             "fidelity": ', '.join([d['name'] for d in dataset_info["fidelities"] if 'name' in d]) if dataset_info["fidelities"] else '',
-            "workloads": task_set.get_cur_workload(),
-            "budget_type": task_set.get_cur_budgettype(),
+            "workloads": task.workload,
+            "budget_type": task.get_budget_type(),
             "initial_number": config['optimizer']['Initialization']['InitNum'],
-            "budget": task_set.get_cur_budget(),
+            "budget": task.get_budget(),
             "seeds": seed,
             "SearchSpace": config['optimizer']['SearchSpace']['type'],
             "Initialization": config['optimizer']['Initialization']['type'],
@@ -358,7 +359,9 @@ class Services:
                 if len(data) > 0:
                     metadata[dataset_name] = data
                     metadata_info[dataset_name] = self.data_manager.db.query_dataset_info(dataset_name)
-        return metadata, metadata_info
+            return metadata, metadata_info
+        else:
+            return {}, {}
     
     def save_data(self, dataset_name, parameters, observations, iteration):
         data = [{} for i in range(len(parameters))]
@@ -415,8 +418,10 @@ class Services:
             optimizer = ConstructOptimizer(configurations['optimizer'], seed)
 
             while (task_set.get_unsolved_num()):
+                task_id = task_set.get_cur_id()
+                task = task_set.get_curtask()
                 search_space = task_set.get_cur_searchspace()
-                task_info, task_name = self.construct_dataset_info(task_set, configurations, seed=seed)
+                task_info, task_name = self.construct_dataset_info(task, configurations, seed=seed)
                 
                 self.data_manager.create_dataset(task_name, task_info, overwrite=True)
                 self.update_process_info(pid, {'dataset_name': task_name, 'task': task_set.get_curname(), 'budget': task_set.get_cur_budget()})

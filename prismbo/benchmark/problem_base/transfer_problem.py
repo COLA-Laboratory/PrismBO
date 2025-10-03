@@ -76,6 +76,9 @@ class TransferProblem:
     def get_curobj_info(self):
         return self.tasks[self.__id].get_objectives()
     
+    def get_cur_task_desc(self):
+        return self.tasks[self.__id].get_description()
+    
     def get_cur_fidelity_info(self) -> Dict:
         return self.tasks[self.__id].fidelity_space.get_fidelity_range()
 

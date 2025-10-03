@@ -23,7 +23,7 @@ class SyntheticProblemBase(NonTabularProblem):
     workloads = []
     fidelity = None
     def __init__(
-        self, task_name, budget_type, budget, seed, workload, **kwargs
+        self, task_name, budget_type, budget, seed, workload, description, **kwargs
     ):
         super(SyntheticProblemBase, self).__init__(
             task_name=task_name,
@@ -31,6 +31,7 @@ class SyntheticProblemBase(NonTabularProblem):
             workload=workload,
             budget_type=budget_type,
             budget=budget,
+            description=description,
         )
 
     def get_fidelity_space(self) -> FidelitySpace:
@@ -48,7 +49,7 @@ class SyntheticProblemBase(NonTabularProblem):
 @problem_registry.register("Sphere")
 class Sphere(SyntheticProblemBase):
     def __init__(
-        self, task_name, budget_type, budget, seed, workload, **kwargs
+        self, task_name, budget_type, budget, seed, workload, description, **kwargs
     ):
         assert "params" in kwargs
         parameters = kwargs["params"]
@@ -74,6 +75,7 @@ class Sphere(SyntheticProblemBase):
             workload=workload,
             budget_type=budget_type,
             budget=budget,
+            description=description,
         )
 
     def objective_function(
@@ -107,7 +109,7 @@ class Sphere(SyntheticProblemBase):
 @problem_registry.register("Rastrigin")
 class Rastrigin(SyntheticProblemBase):
     def __init__(
-        self, task_name, budget_type, budget, seed, workload, **kwargs
+        self, task_name, budget_type, budget, seed, workload, description, **kwargs
     ):
         assert "params" in kwargs
         parameters = kwargs["params"]
@@ -133,6 +135,7 @@ class Rastrigin(SyntheticProblemBase):
             workload=workload,
             budget_type=budget_type,
             budget=budget,
+            description=description,
         )
 
     def objective_function(
@@ -167,7 +170,7 @@ class Rastrigin(SyntheticProblemBase):
 @problem_registry.register("Schwefel")
 class Schwefel(SyntheticProblemBase):
     def __init__(
-        self, task_name, budget_type, budget, seed, workload, **kwargs
+        self, task_name, budget_type, budget, seed, workload, description, **kwargs
     ):
         assert "params" in kwargs
         parameters = kwargs["params"]
@@ -193,6 +196,7 @@ class Schwefel(SyntheticProblemBase):
             workload=workload,
             budget_type=budget_type,
             budget=budget,
+            description=description,
         )
 
     def objective_function(
@@ -229,7 +233,7 @@ class Schwefel(SyntheticProblemBase):
 @problem_registry.register("LevyR")
 class LevyR(SyntheticProblemBase):
     def __init__(
-        self, task_name, budget_type, budget, seed, workload, **kwargs
+        self, task_name, budget_type, budget, seed, workload, description, **kwargs
     ):
         assert "params" in kwargs
         parameters = kwargs["params"]
@@ -255,6 +259,7 @@ class LevyR(SyntheticProblemBase):
             workload=workload,
             budget_type=budget_type,
             budget=budget,
+            description=description,
         )
 
     def objective_function(
@@ -297,7 +302,7 @@ class LevyR(SyntheticProblemBase):
 @problem_registry.register("Griewank")
 class Griewank(SyntheticProblemBase):
     def __init__(
-        self, task_name, budget_type, budget, seed, workload, **kwargs
+        self, task_name, budget_type, budget, seed, workload, description, **kwargs
     ):
         assert "params" in kwargs
         parameters = kwargs["params"]
@@ -323,6 +328,7 @@ class Griewank(SyntheticProblemBase):
             workload=workload,
             budget_type=budget_type,
             budget=budget,
+            description=description,
         )
 
     def objective_function(
@@ -359,7 +365,7 @@ class Griewank(SyntheticProblemBase):
 @problem_registry.register("Rosenbrock")
 class Rosenbrock(SyntheticProblemBase):
     def __init__(
-        self, task_name, budget_type, budget, seed, workload, **kwargs
+        self, task_name, budget_type, budget, seed, workload, description, **kwargs
     ):
         assert "params" in kwargs
         parameters = kwargs["params"]
@@ -385,6 +391,7 @@ class Rosenbrock(SyntheticProblemBase):
             workload=workload,
             budget_type=budget_type,
             budget=budget,
+            description=description,
         )
 
     def objective_function(
@@ -421,7 +428,7 @@ class Rosenbrock(SyntheticProblemBase):
 @problem_registry.register("DropwaveR")
 class DropwaveR(SyntheticProblemBase):
     def __init__(
-        self, task_name, budget_type, budget, seed, workload, **kwargs
+        self, task_name, budget_type, budget, seed, workload, description, **kwargs
     ):
         assert "params" in kwargs
         parameters = kwargs["params"]
@@ -451,6 +458,7 @@ class DropwaveR(SyntheticProblemBase):
             workload=workload,
             budget_type=budget_type,
             budget=budget,
+            description=description,
         )
 
     def objective_function(
@@ -485,7 +493,7 @@ class DropwaveR(SyntheticProblemBase):
 @problem_registry.register("Langermann")
 class Langermann(SyntheticProblemBase):
     def __init__(
-        self, task_name, budget_type, budget, seed, workload, **kwargs
+        self, task_name, budget_type, budget, seed, workload, description, **kwargs
     ):
         assert "params" in kwargs
         parameters = kwargs["params"]
@@ -515,6 +523,7 @@ class Langermann(SyntheticProblemBase):
             workload=workload,
             budget_type=budget_type,
             budget=budget,
+            description=description,
         )
 
     def objective_function(
@@ -732,7 +741,7 @@ class StyblinskiTang(SyntheticProblemBase):
 @problem_registry.register("Powell")
 class Powell(SyntheticProblemBase):
     def __init__(
-        self, task_name, budget_type, budget, seed, workload, **kwargs
+        self, task_name, budget_type, budget, seed, workload, description, **kwargs
     ):
         assert "params" in kwargs
         parameters = kwargs["params"]
@@ -758,6 +767,7 @@ class Powell(SyntheticProblemBase):
             workload=workload,
             budget_type=budget_type,
             budget=budget,
+            description=description,
         )
 
     def objective_function(
@@ -866,7 +876,7 @@ class DixonPrice(SyntheticProblemBase):
 @problem_registry.register("cp")
 class cp(SyntheticProblemBase):
     def __init__(
-        self, task_name, budget_type, budget, seed, workload, **kwargs
+        self, task_name, budget_type, budget, seed, workload, description, **kwargs
     ):
         assert "params" in kwargs
         parameters = kwargs["params"]
@@ -897,6 +907,7 @@ class cp(SyntheticProblemBase):
             workload=workload,
             budget_type=budget_type,
             budget=budget,
+            description=description,
         )
 
     def objective_function(
@@ -934,7 +945,7 @@ class cp(SyntheticProblemBase):
 @problem_registry.register("mpb")
 class mpb(SyntheticProblemBase):
     def __init__(
-        self, task_name, budget_type, budget, seed, workload, **kwargs
+        self, task_name, budget_type, budget, seed, workload, description, **kwargs
     ):
         assert "params" in kwargs
         parameters = kwargs["params"]
@@ -965,6 +976,7 @@ class mpb(SyntheticProblemBase):
             workload=workload,
             budget_type=budget_type,
             budget=budget,
+            description=description,
         )
 
     def objective_function(
@@ -1004,7 +1016,7 @@ def get_configuration_space(self) -> SearchSpace:
 @problem_registry.register("Ackley")
 class Ackley(SyntheticProblemBase):
     def __init__(
-        self, task_name, budget_type, budget, seed, workload, **kwargs
+        self, task_name, budget_type, budget, seed, workload, description, **kwargs
     ):
         assert "params" in kwargs
         parameters = kwargs["params"]
@@ -1034,6 +1046,7 @@ class Ackley(SyntheticProblemBase):
             workload=workload,
             budget_type=budget_type,
             budget=budget,
+            description=description,
         )
 
     def objective_function(
@@ -1070,7 +1083,7 @@ class Ackley(SyntheticProblemBase):
 @problem_registry.register("Ellipsoid")
 class Ellipsoid(SyntheticProblemBase):
     def __init__(
-        self, task_name, budget_type, budget, seed, workload, **kwargs
+        self, task_name, budget_type, budget, seed, workload, description, **kwargs
     ):
         assert "params" in kwargs
         parameters = kwargs["params"]
@@ -1098,6 +1111,7 @@ class Ellipsoid(SyntheticProblemBase):
             workload=workload,
             budget_type=budget_type,
             budget=budget,
+            description=description,
         )
 
     def objective_function(
@@ -1136,7 +1150,7 @@ class Ellipsoid(SyntheticProblemBase):
 @problem_registry.register("Discus")
 class Discus(SyntheticProblemBase):
     def __init__(
-        self, task_name, budget_type, budget, seed, workload, **kwargs
+        self, task_name, budget_type, budget, seed, workload, description, **kwargs
     ):
         assert "params" in kwargs
         parameters = kwargs["params"]
@@ -1164,6 +1178,7 @@ class Discus(SyntheticProblemBase):
             workload=workload,
             budget_type=budget_type,
             budget=budget,
+            description=description,
         )
 
     def objective_function(
@@ -1201,7 +1216,7 @@ class Discus(SyntheticProblemBase):
 @problem_registry.register("BentCigar")
 class BentCigar(SyntheticProblemBase):
     def __init__(
-        self, task_name, budget_type, budget, seed, workload, **kwargs
+        self, task_name, budget_type, budget, seed, workload, description, **kwargs
     ):
         assert "params" in kwargs
         parameters = kwargs["params"]
@@ -1229,6 +1244,7 @@ class BentCigar(SyntheticProblemBase):
             workload=workload,
             budget_type=budget_type,
             budget=budget,
+            description=description,
         )
 
     def objective_function(
@@ -1266,7 +1282,7 @@ class BentCigar(SyntheticProblemBase):
 @problem_registry.register("SharpRidge")
 class SharpRidge(SyntheticProblemBase):
     def __init__(
-        self, task_name, budget_type, budget, seed, workload, **kwargs
+        self, task_name, budget_type, budget, seed, workload, description, **kwargs
     ):
         assert "params" in kwargs
         parameters = kwargs["params"]
@@ -1294,6 +1310,7 @@ class SharpRidge(SyntheticProblemBase):
             workload=workload,
             budget_type=budget_type,
             budget=budget,
+            description=description,
         )
 
     def objective_function(
@@ -1336,7 +1353,7 @@ class SharpRidge(SyntheticProblemBase):
 @problem_registry.register("GriewankRosenbrock")
 class GriewankRosenbrock(SyntheticProblemBase):
     def __init__(
-        self, task_name, budget_type, budget, seed, workload, **kwargs
+        self, task_name, budget_type, budget, seed, workload, description, **kwargs
     ):
         assert "params" in kwargs
         parameters = kwargs["params"]
@@ -1362,6 +1379,7 @@ class GriewankRosenbrock(SyntheticProblemBase):
             workload=workload,
             budget_type=budget_type,
             budget=budget,
+            description=description,
         )
 
     def objective_function(
@@ -1403,7 +1421,7 @@ class GriewankRosenbrock(SyntheticProblemBase):
 @problem_registry.register("Katsuura")
 class Katsuura(SyntheticProblemBase):
     def __init__(
-        self, task_name, budget_type, budget, seed, workload, **kwargs
+        self, task_name, budget_type, budget, seed, workload, description, **kwargs
     ):
         assert "params" in kwargs
         parameters = kwargs["params"]
@@ -1429,6 +1447,7 @@ class Katsuura(SyntheticProblemBase):
             workload=workload,
             budget_type=budget_type,
             budget=budget,
+            description=description,
         )
 
     def objective_function(

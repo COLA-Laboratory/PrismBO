@@ -79,7 +79,7 @@ class HPO_base(NonTabularProblem):
     ]
 
     def __init__(
-        self, task_name, budget_type, budget, seed, workload, algorithm, architecture, model_size, **kwargs
+        self, task_name, budget_type, budget, seed, workload, algorithm, architecture, model_size, description, **kwargs
         ):
 
         self.algorithm_name = 'ERM'
@@ -105,6 +105,7 @@ class HPO_base(NonTabularProblem):
             budget_type=budget_type,
             seed=seed,
             workload=workload,
+            description=description,
         )
         
         self.query_counter = kwargs.get('query_counter', 0)

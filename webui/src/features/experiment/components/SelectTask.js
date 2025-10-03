@@ -16,6 +16,7 @@ function TaskTable({ tasks, handleDelete, handleEdit, setDrawerVisible }) {
       columns={[
         { title: '#', dataIndex: 'index', key: 'index' },
         { title: 'Task Name', dataIndex: 'name', key: 'name' },
+        { title: 'Description', dataIndex: 'description', key: 'description' },
         { title: 'Variables', dataIndex: 'num_vars', key: 'num_vars' },
         { title: 'Objectives', dataIndex: 'num_objs', key: 'num_objs' },
         { title: 'Fidelity', dataIndex: 'fidelity', key: 'fidelity' },
@@ -181,6 +182,13 @@ function SelectTask({ data,tasks, setTasks, updateTable }) {
               style={{ fontSize: '14px', width: '300px' }}
               options={data.map(item => ({ value: item.name }))}
             />
+          </Form.Item>
+          <Form.Item
+            name="description"
+            label={<span style={{ fontSize: '18px', fontWeight: 'bold' }}>Description</span>}
+            rules={[{ required: false, message: 'Please enter the description!' }]}
+          >
+            <Input placeholder="description of the problem" style={{ fontSize: '14px', width: '300px' }}/>
           </Form.Item>
           <Form.Item
             name="num_vars"
