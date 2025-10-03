@@ -1,0 +1,33 @@
+<task> ::= "<task>" <name> <description> <objectives> <variables> [<constraints>] [<statistics>] "</task>"
+
+<name> ::= "<name>" <string> "</name>"
+<description> ::= "<desc>" <string> "</desc>"
+
+<objectives> ::= "<objectives>" { <objective> } "</objectives>"
+<objective> ::= "<obj>" <obj_name> <direction> "</obj>"
+<obj_name> ::= <string>
+<direction> ::= "minimize" | "maximize"
+
+<variables> ::= "<variables>" { <variable> } "</variables>"
+<variable> ::= "<var>" <var_name> <var_type> <range> "</var>"
+<var_name> ::= <string>
+<var_type> ::= "real" | "integer" | "categorical"
+<range> ::= "[" <number> "," <number> "]" | "{" <categorical_list> "}"
+<categorical_list> ::= <string> { "," <string> }
+
+<constraints> ::= "<constraints>" { <constraint> } "</constraints>"
+<constraint> ::= "<con>" <con_name> <con_type> "</con>"
+<con_name> ::= <string>
+<con_type> ::= "eq" | "ineq"
+
+<statistics> ::= "<stats>" [data_num] [<mean>] [<variance>] "</stats>"
+<data_num> ::= "<dnum>" <num> "</dnum>"
+<mean> ::= "<mean>" <number> "</mean>"
+<variance> ::= "<variance>" <number> "</variance>"
+
+<integer> ::= <digit> {<digit>}
+<number> ::= <digit> {<digit>} ["." <digit> {<digit>}]
+<digit> ::= "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
+<string> ::= "\"" <character> {<character>} "\""
+<character> ::= <letter> | <digit> | "_" | " " | "." | "," | "-"
+<letter> ::= "a" | ... | "z" | "A" | ... | "Z"
