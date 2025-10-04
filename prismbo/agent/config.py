@@ -77,7 +77,6 @@ class Configer:
             'remote': self.remote,
             'server_url': self.server_url,
             'experimentName': self.exp_name,
-            'experimentDescription': self.exp_description
         }
         with open(self.CONFIG_FILE, 'w') as f:
             json.dump(config, f, indent=4)
@@ -95,7 +94,6 @@ class Configer:
         self.remote = config_info['Remote']
         self.server_url = config_info['server_url']
         self.exp_name = config_info['experimentName']
-        self.exp_description = config_info['experimentDescription']
         
         self._save_config()
         

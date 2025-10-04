@@ -46,12 +46,12 @@ class LSHCache:
             return
         # Compute a combined fingerprint for the string dimensions
         combined_fp = []
-        for dimension in vector[:2]:  # Only take the first two string dimensions
+        for dimension in vector[:3]:  # Only take the first two string dimensions
             combined_fp.extend(self.hasher.fingerprint(dimension))
 
         # Incorporate the integer dimensions by modifying the bucket key
-        num_variables = vector[2]
-        num_objectives = vector[3]
+        num_variables = vector[3]
+        num_objectives = vector[4]
         
         # Store the combined fingerprint
         self.fingerprints[key] = (combined_fp, num_variables, num_objectives)
@@ -84,7 +84,8 @@ class LSHCache:
         similar_items = set()
         combined_fp = []
         for dimension in vector[:3]:  # Only take the first two string dimensions
-            combined_fp.extend(self.hasher.fingerprint(dimension))
+            if len(dimension) > 0:
+                combined_fp.extend(self.hasher.fingerprint(dimension))
 
         num_variables = vector[3]
         num_objectives = vector[4]

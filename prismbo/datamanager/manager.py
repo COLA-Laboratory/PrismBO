@@ -19,7 +19,7 @@ class DataManager:
         return cls._instance
     
     def __init__(
-        self, db=None, num_hashes=100, char_ngram=5, num_bands=25, random_state=12345
+        self, db=None, num_hashes=100, char_ngram=2, num_bands=50, random_state=12345
     ):
         if not self._initialized:
             if db is None:
@@ -54,7 +54,7 @@ class DataManager:
 
             variables = dataset_info["variables"]
             
-            variable_names = " ".join([var["name"] for var in variables])
+            variable_names = "".join([var["name"] for var in variables])
             
             task_name = dataset_info["additional_config"]['problem_name']
             return (task_name, description, variable_names, num_variables, num_objectives)
