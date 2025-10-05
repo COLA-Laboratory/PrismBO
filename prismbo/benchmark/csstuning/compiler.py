@@ -8,16 +8,16 @@ from prismbo.space.search_space import SearchSpace
 from prismbo.space.variable import *
 
 
-@problem_registry.register("Compiler_GCC")
+@problem_registry.register("CSSTuning_GCC")
 class GCCTuning(NonTabularProblem):
     problem_type = 'compiler'
     workloads = GCCBenchmark.AVAILABLE_WORKLOADS
-    num_variables = 104
-    num_objectives = 3
+    num_variables = 10
+    num_objectives = 1
     fidelity = None
     
-    def __init__(self, task_name, budget_type, budget, seed, workload, knobs=None, **kwargs):        
-        self.workload = workload or GCCBenchmark.AVAILABLE_WORKLOADS[0]
+    def __init__(self, task_name, budget_type, budget, seed, workload, description, knobs=None, **kwargs):        
+        self.workload = GCCBenchmark.AVAILABLE_WORKLOADS[workload]
         self.benchmark = GCCBenchmark(workload=self.workload)
         
         all_knobs = self.benchmark.get_config_space()
@@ -30,12 +30,17 @@ class GCCTuning(NonTabularProblem):
             budget_type=budget_type,
             seed=seed,
             workload=workload,
+            description=description,
         )
         np.random.seed(seed)
 
     def get_configuration_space(self):
         variables = []
-        for knob_name, knob_details in self.knobs.items():
+        tuning_knobs = {
+            "ipa-cp", "ipa-icf", "devirtualize", "inline-functions-called-once", "tree-pta", "omit-frame-pointer", "tree-fre", "tree-dse", "code-hoisting", "reorder-blocks"
+        }
+        for knob_name in tuning_knobs:
+            knob_details = self.knobs[knob_name]
             knob_type = knob_details["type"]
             range_ = knob_details["range"]
             
@@ -52,8 +57,8 @@ class GCCTuning(NonTabularProblem):
     def get_objectives(self) -> dict:
         return {
             "execution_time": "minimize",
-            "compilation_time": "minimize",
-            "file_size": "minimize",
+            # "compilation_time": "minimize",
+            # "file_size": "minimize",
             # "maxrss": "minimize",
             # "PAPI_TOT_CYC": "minimize",
             # "PAPI_TOT_INS": "minimize",
@@ -70,21 +75,22 @@ class GCCTuning(NonTabularProblem):
         try:
             perf = self.benchmark.run(configuration)
             return {obj: perf.get(obj, 1e10) for obj in self.get_objectives()}
+        
         except Exception as e:
             return {obj: 1e10 for obj in self.get_objectives()}
         
 
 
-@problem_registry.register("Compiler_LLVM")
+@problem_registry.register("CSSTuning_LLVM")
 class LLVMTuning(NonTabularProblem):
     problem_type = 'compiler'
     workloads = LLVMBenchmark.AVAILABLE_WORKLOADS
-    num_variables = 82
-    num_objectives = 3
+    num_variables = 10
+    num_objectives = 1
     fidelity = None
     
-    def __init__(self, task_name, budget_type, budget, seed, workload, knobs=None, **kwargs):
-        self.workload = workload or LLVMBenchmark.AVAILABLE_WORKLOADS[0]
+    def __init__(self, task_name, budget_type, budget, seed, workload, description, knobs=None, **kwargs):
+        self.workload = LLVMBenchmark.AVAILABLE_WORKLOADS[workload]
         self.benchmark = LLVMBenchmark(workload=self.workload)
         
         all_knobs = self.benchmark.get_config_space()
@@ -97,12 +103,17 @@ class LLVMTuning(NonTabularProblem):
             budget_type=budget_type,
             seed=seed,
             workload=workload,
+            description=description,
         )
         np.random.seed(seed)
 
     def get_configuration_space(self):
         variables = []
-        for knob_name, knob_details in self.knobs.items():
+        tuning_knobs = {
+            "inline", "loop-rotate", "gvn", "dse", "licm", "jump-threading", "instcombine", "indvars", "loop-unroll", "memdep" 
+        }
+        for knob_name in tuning_knobs:
+            knob_details = self.knobs[knob_name]
             knob_type = knob_details["type"]
             range_ = knob_details["range"]
             
@@ -119,8 +130,8 @@ class LLVMTuning(NonTabularProblem):
     def get_objectives(self) -> dict:
         return {
             "execution_time": "minimize",
-            "compilation_time": "minimize",
-            "file_size": "minimize",
+            # "compilation_time": "minimize",
+            # "file_size": "minimize",
         }
     
     def get_problem_type(self):
@@ -139,5 +150,7 @@ if __name__ == "__main__":
     conf = {
         
     }
-    benchmark.run(conf)
+    llvmbenchmark = LLVMBenchmark(workload="cbench-automotive-bitcount")
+
+    llvmbenchmark.run(conf)
 

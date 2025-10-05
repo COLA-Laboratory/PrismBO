@@ -8,31 +8,47 @@ from prismbo.space.search_space import SearchSpace
 from prismbo.space.variable import *
 
 
-@problem_registry.register("DBMS_MySQL")
+@problem_registry.register("CSSTuning_MySQL")
 class MySQLTuning(NonTabularProblem):
     problem_type = 'dbms'
     workloads = MySQLBenchmark.AVAILABLE_WORKLOADS
-    num_variables = 197
-    num_objectives = 2
+    num_variables = 5
+    num_objectives = 1
     fidelity = None
     
-    def __init__(self, task_name, budget_type, budget, seed, workload, knobs=None, **kwargs):        
-        self.workload = workload or MySQLBenchmark.AVAILABLE_WORKLOADS[0]
+    def __init__(self, task_name, budget_type, budget, seed, workload, description, knobs=None, **kwargs):        
+        self.workload = MySQLBenchmark.AVAILABLE_WORKLOADS[workload]
 
         self.benchmark = MySQLBenchmark(workload=self.workload)
         self.knobs = self.benchmark.get_config_space()
         self.num_variables = len(self.knobs)
         
-        super().__init__(task_name, budget_type, budget, workload, seed)
+        super().__init__(task_name=task_name, budget_type=budget_type, budget=budget, workload=workload, description=description, seed=seed)
         np.random.seed(seed)
 
 
     def get_configuration_space(self):
         variables = []
-        
-        for knob_name, knob_details in self.knobs.items():
+        tuning_knobs = {
+            "innodb_buffer_pool_size",
+            "innodb_flush_log_at_trx_commit",
+            "innodb_flush_neighbors",
+            "innodb_doublewrite",
+            "innodb_io_capacity"
+        }
+        for knob_name in tuning_knobs:
+            knob_details = self.knobs[knob_name]
             knob_type = knob_details["type"]
             range_ = knob_details["range"]
+            
+            if knob_type == "enum":
+                variables.append(Categorical(knob_name, range_))
+            elif knob_type == "integer":
+                if range_[1] > np.iinfo(np.int64).max:
+                    variables.append(ExponentialInteger(knob_name, range_))
+                else:
+                    variables.append(Integer(knob_name, range_))
+
             
             if knob_type == "enum":
                 variables.append(Categorical(knob_name, range_))
@@ -50,7 +66,7 @@ class MySQLTuning(NonTabularProblem):
     def get_objectives(self) -> dict:
         return {
             "latency": "minimize",
-            "throughput": "maximize",
+            # "throughput": "maximize",
         }
         
     def get_problem_type(self):
@@ -64,5 +80,5 @@ class MySQLTuning(NonTabularProblem):
             return {obj: 1e10 for obj in self.get_objectives()}
 
 if __name__ == "__main__":
-    # a = DBMSTuning("1", 121, 0, 1)
-    pass
+    a = MySQLTuning('1', 'Num_FEs', 121, 0, 'sibench', knobs=None)
+    print(a.f({}))
