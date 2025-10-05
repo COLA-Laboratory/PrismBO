@@ -433,6 +433,11 @@ class Services:
                 autoselect = self.Ifautoselect('Initialization')
                 if autoselect:
                     metadata, metadata_info = self.auto_get_data(task_name, task_info)
+                    if metadata != {}:
+                        print(f"Using {len(metadata.keys())} metadata: {metadata.keys()}")
+                    else:
+                        print("No metadata used in initialization.")
+                    
                 samples = optimizer.sample_initial_set(metadata, metadata_info)
                 
                 parameters = [search_space.map_to_design_space(sample) for sample in samples]
@@ -447,6 +452,10 @@ class Services:
                 autoselect = self.Ifautoselect('SearchSpace')
                 if autoselect:
                     metadata, metadata_info = self.auto_get_data(task_name, task_info)
+                    if metadata != {}:
+                        print(f"Using {len(metadata.keys())} metadata: {metadata.keys()}")
+                    else:
+                        print("No metadata used in search space refine.")
                 optimizer.search_space_refine(optimizer.search_space, metadata, metadata_info)
                 
                 #step3: pretrain
@@ -454,14 +463,22 @@ class Services:
                 autoselect = self.Ifautoselect('Pretrain')
                 if autoselect:
                     metadata, metadata_info = self.auto_get_data(task_name, task_info)
+                    if metadata != {}:
+                        print(f"Using {len(metadata.keys())} metadata: {metadata.keys()}")
+                    else:
+                        print("No metadata used in pretrain.")
                 optimizer.pretrain(metadata, metadata_info)
                 
                 #step4: meta-fit
                 metadata, metadata_info = self.get_metadata('Model')
-                autoselect = self.Ifautoselect('Model')
+                autoselect = self.Ifautoselect('Model') 
                 if autoselect:
                     metadata, metadata_info = self.auto_get_data(task_name, task_info)
-                optimizer.meta_fit(metadata, metadata_info)
+                    if metadata != {}:
+                        print(f"Using {len(metadata.keys())} metadata: {metadata.keys()}")
+                    else:
+                        print("No metadata used in meta-fit.")
+                optimizer.meta_fit(metadata, metadata_info) 
                 
                 cur_iter = 0
                 self.update_process_info(pid, {'iteration': cur_iter + 1})
@@ -471,6 +488,10 @@ class Services:
                 autoselect = self.Ifautoselect('AcquisitionFunction')
                 if autoselect:
                     metadata, metadata_info = self.auto_get_data(task_name, task_info)
+                    if metadata != {}:
+                        print(f"Using {len(metadata.keys())} metadata: {metadata.keys()}")
+                    else:
+                        print("No metadata used in acquisition function.")
                 optimizer.ACF_meta(metadata, metadata_info)
                 
                 while (task_set.get_rest_budget()):
