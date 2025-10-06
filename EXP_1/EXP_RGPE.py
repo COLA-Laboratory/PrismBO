@@ -14,7 +14,6 @@ import numpy as np
 import pandas as pd
 import tqdm
 from smac.optimizer.acquisition import EI
-from smac.optimizer.ei_optimization import FixedSet
 from smac.scenario.scenario import Scenario
 from smac.facade.smac_bo_facade import SMAC4BO
 from smac.initial_design.latin_hypercube_design import LHDesign

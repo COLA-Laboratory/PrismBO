@@ -48,7 +48,6 @@ class Configer:
                 self.remote = config.get('remote', False)
                 self.server_url = config.get('server_url', '')
                 self.exp_name = config.get('experimentName', '')
-                self.exp_description = config.get('experimentDescription', '')
                 self.metadata = config.get('Metadata', {'dataset': None})
         else:
             self.tasks = []
@@ -63,7 +62,6 @@ class Configer:
             self.remote = False
             self.server_url = ''
             self.exp_name = ''
-            self.exp_description = ''
             self.metadata = {'dataset': None}
             self._save_config()
 
@@ -77,6 +75,7 @@ class Configer:
             'remote': self.remote,
             'server_url': self.server_url,
             'experimentName': self.exp_name,
+            
         }
         with open(self.CONFIG_FILE, 'w') as f:
             json.dump(config, f, indent=4)

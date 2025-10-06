@@ -12,7 +12,7 @@ from prismbo.space.variable import *
 class GCCTuning(NonTabularProblem):
     problem_type = 'compiler'
     workloads = GCCBenchmark.AVAILABLE_WORKLOADS
-    num_variables = 10
+    num_variables = 5
     num_objectives = 1
     fidelity = None
     
@@ -37,7 +37,7 @@ class GCCTuning(NonTabularProblem):
     def get_configuration_space(self):
         variables = []
         tuning_knobs = {
-            "ipa-cp", "ipa-icf", "devirtualize", "inline-functions-called-once", "tree-pta", "omit-frame-pointer", "tree-fre", "tree-dse", "code-hoisting", "reorder-blocks"
+            "ipa-cp", "ipa-icf", "devirtualize", "inline-functions-called-once", "tree-pta"
         }
         for knob_name in tuning_knobs:
             knob_details = self.knobs[knob_name]
@@ -56,7 +56,7 @@ class GCCTuning(NonTabularProblem):
     
     def get_objectives(self) -> dict:
         return {
-            "execution_time": "minimize",
+            "f1": "minimize",
             # "compilation_time": "minimize",
             # "file_size": "minimize",
             # "maxrss": "minimize",
@@ -85,7 +85,7 @@ class GCCTuning(NonTabularProblem):
 class LLVMTuning(NonTabularProblem):
     problem_type = 'compiler'
     workloads = LLVMBenchmark.AVAILABLE_WORKLOADS
-    num_variables = 10
+    num_variables = 5
     num_objectives = 1
     fidelity = None
     
@@ -110,7 +110,7 @@ class LLVMTuning(NonTabularProblem):
     def get_configuration_space(self):
         variables = []
         tuning_knobs = {
-            "inline", "loop-rotate", "gvn", "dse", "licm", "jump-threading", "instcombine", "indvars", "loop-unroll", "memdep" 
+            "inline", "loop-rotate", "gvn", "dse", "licm"
         }
         for knob_name in tuning_knobs:
             knob_details = self.knobs[knob_name]
@@ -129,7 +129,7 @@ class LLVMTuning(NonTabularProblem):
     
     def get_objectives(self) -> dict:
         return {
-            "execution_time": "minimize",
+            "f1": "minimize",
             # "compilation_time": "minimize",
             # "file_size": "minimize",
         }

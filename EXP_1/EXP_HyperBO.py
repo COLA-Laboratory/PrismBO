@@ -68,7 +68,7 @@ SubDataset = defs.SubDataset
 
 
 def get_source_data(task_name):
-    task_source = {'Sphere': 'Sphere_source', 'Rastrigin': 'Rastrigin_source', 'Schwefel': 'Schwefel_source', 'Ackley': 'Ackley_source', 'Griewank': 'Griewank_source', 'Rosenbrock': 'Rosenbrock_source'}
+    task_source = {'Rastrigin': 'Rastrigin_source', 'Schwefel': 'Schwefel_source', 'Ackley': 'Ackley_source', 'Griewank': 'Griewank_source', 'Rosenbrock': 'Rosenbrock_source'}
     source_name = task_source[task_name]
 
     datasets = {}

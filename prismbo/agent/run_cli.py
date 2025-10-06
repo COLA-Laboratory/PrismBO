@@ -29,16 +29,21 @@ def set_task(services, args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     # Experiment
-    parser.add_argument("-e", "--experiment_name", type=str, default="exp_2")
-    parser.add_argument("-ed", "--experiment_description", type=str, default="")
-    # Task
-
-    # Seed
-    # parser.add_argument("-s", "--seeds", type=str, default="5")
+    parser.add_argument("-e", "--experiment_name", type=str, default="exp_1")
 
     args = parser.parse_args()
     services = Services(None, None, None)
     services._initialize_modules()
+    
+    configurations = services.configer.get_configuration()
+    seeds = configurations['seeds'].split(',')
+    seeds = [int(seed) for seed in seeds]
+
+    for seed in seeds:
+        try:
+            services._run_optimize_process(seed = seed, configurations=configurations)
+        except Exception as e:
+            traceback.print_exc()
 
 
     # show(['Rastrigin_w0_s0_1753949959', 'Rastrigin_w1_s0_1753949960', 'Rastrigin_w2_s0_1753949961', 'Rastrigin_w0_s1_1753949962', 'Rastrigin_w1_s1_1753949963', 'Rastrigin_w2_s1_1753949964', 'Rastrigin_w0_s2_1753949965', 'Rastrigin_w1_s2_1753949965', 'Rastrigin_w2_s2_1753949966'], services.data_manager, args)
@@ -47,17 +52,10 @@ if __name__ == "__main__":
     
     # show(['Ackley_w0_s0_1753947903', 'Ackley_w1_s0_1753947692', 'Ackley_w2_s0_1753947910', 'Ackley_w0_s1_1753947919', 'Ackley_w2_s1_1753947927'], services.data_manager, args)
 
-    configurations = services.configer.get_configuration()
-    seeds = configurations['seeds'].split(',')
-    seeds = [int(seed) for seed in seeds]
-    
+
     
 
-    for seed in seeds:
-        try:
-            services._run_optimize_process(seed = seed, configurations=configurations)
-        except Exception as e:
-            traceback.print_exc()
+
 
     os.makedirs('Results', exist_ok=True)
     datasets = []

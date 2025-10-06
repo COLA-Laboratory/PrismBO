@@ -32,15 +32,14 @@ from external.transfergpbo.parameters import parameters as params
 
 from emukit.core import ParameterSpace, ContinuousParameter
 
-
-from torch import Tensor
-from typing import List, Dict, Tuple, Callable, Hashable
-import json
+from prismbo.benchmark.hpo import * 
+from prismbo.benchmark.csstuning.compiler import LLVMTuning, GCCTuning
+from prismbo.benchmark.csstuning.dbms import MySQLTuning
+from prismbo.benchmark.synthetic.singleobj import *
 
 from prismbo.agent.services import Services
 from prismbo.analysis.analysisbase import AnalysisBase
 
-from prismbo.benchmark.synthetic.singleobj import *
 
 from datetime import datetime
 import os
@@ -48,6 +47,37 @@ import tqdm
 # suppress GPyTorch warnings about adding jitter
 import warnings
 warnings.filterwarnings("ignore", "^.*jitter.*", category=RuntimeWarning)
+
+task_class_dict = {
+    'Ackley': Ackley,
+    'Rastrigin': Rastrigin,
+    'Rosenbrock': Rosenbrock,
+    'XGBoost': XGBoostBenchmark,
+    'HPO_PINN': HPO_PINN,
+    'HPO_ResNet18': HPO_ResNet18,
+    'HPO_ResNet32': HPO_ResNet32,
+    'CSSTuning_GCC': GCCTuning,
+    'CSSTuning_LLVM': LLVMTuning,
+    'CSSTuning_MySQL': MySQLTuning,
+}
+
+CONFIG_FILE = os.path.join("config", "running_config.json")
+
+
+def read_config():
+    with open(CONFIG_FILE, 'r') as f:
+        config = json.load(f)
+        return {
+            'tasks': config.get('tasks'),
+            'optimizer': config.get('optimizer'),
+            'seeds': config.get('seeds', '42'),
+            'remote': config.get('remote', False),
+            'server_url': config.get('server_url', ''),
+            'experimentName': config.get('experimentName', ''),
+        }
+import json
+
+
 
 
 

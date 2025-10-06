@@ -1,9 +1,44 @@
 from hyperopt import fmin, tpe, hp, STATUS_OK, Trials
-from prismbo.benchmark.synthetic.singleobj import *
 import numpy as np
 import json
 import os
 from datetime import datetime
+import time
+from prismbo.benchmark.hpo import * 
+from prismbo.benchmark.csstuning.compiler import LLVMTuning, GCCTuning
+from prismbo.benchmark.csstuning.dbms import MySQLTuning
+from prismbo.benchmark.synthetic.singleobj import *
+
+task_class_dict = {
+    'Ackley': Ackley,
+    'Rastrigin': Rastrigin,
+    'Rosenbrock': Rosenbrock,
+    'XGBoost': XGBoostBenchmark,
+    'HPO_PINN': HPO_PINN,
+    'HPO_ResNet18': HPO_ResNet18,
+    'HPO_ResNet32': HPO_ResNet32,
+    'CSSTuning_GCC': GCCTuning,
+    'CSSTuning_LLVM': LLVMTuning,
+    'CSSTuning_MySQL': MySQLTuning,
+}
+
+
+CONFIG_FILE = os.path.join("config", "running_config.json")
+
+
+def read_config():
+    with open(CONFIG_FILE, 'r') as f:
+        config = json.load(f)
+        return {
+            'tasks': config.get('tasks'),
+            'optimizer': config.get('optimizer'),
+            'seeds': config.get('seeds', '42'),
+            'remote': config.get('remote', False),
+            'server_url': config.get('server_url', ''),
+            'experimentName': config.get('experimentName', ''),
+        }
+    
+
 
 def objective(params):
     result = task.objective_function(configuration=params)
@@ -16,79 +51,34 @@ def get_hyperopt_space():
         space[param_name] = hp.uniform(param_name, param_range[0], param_range[1])
     return space
 
-def run_experiment(task_name, task_class, input_dim, workload, seed, n_iterations=200):
-    # Create task instance
-    task = task_class(
-        task_name=task_name,
-        budget_type='FEs',
-        budget=220,
-        seed=seed,
-        workload=workload,
-        params={'input_dim': input_dim}
-    )
-    
-    # Create search space
-    search_space = get_hyperopt_space()
-    
-    # Run optimization
-    trials = Trials()
-    np.random.seed(seed)
-    
-    best = fmin(fn=objective,
-                space=search_space,
-                algo=tpe.suggest,
-                max_evals=n_iterations,
-                trials=trials,
-                rstate=np.random.default_rng(seed))
-    
-    # Collect optimization history
-    history = []
-    for trial in trials.trials:
-        history.append({
-            'iteration': trial['tid'],
-            'params': trial['misc']['vals'],
-            'loss': trial['result']['loss']
-        })
-    
-    return {
-        'best_params': best,
-        'best_value': float(1 - min(trials.losses())),
-        'history': history
-    }
-
 if __name__ == "__main__":
     # Experiment settings
-    tasks = [
-        ('Rastrigin', Rastrigin, 10),
-        ('Schwefel', Schwefel, 10),
-        ('Ackley', Ackley, 10),
-        ('Griewank', Griewank, 10),
-        ('Rosenbrock', Rosenbrock, 10),
-    ]
-    workloads = [0, 1, 2, 3, 4, 5]  # Different workloads
-    seeds = [0, 1, 2, 3, 4, 5]  # Multiple seeds for repetition
+    config =read_config()
+    seeds = [int(s.strip()) for s in config['seeds'].split(',')]  # Multiple seeds for repetition
     
     # Create results directory
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    results_dir = f"results/hyperopt_{timestamp}"
+    results_dir = f"results/hyperopt_{config['experimentName']}"
     os.makedirs(results_dir, exist_ok=True)
     
     # Run experiments
     all_results = {}
-    for task_name, task_class, input_dim in tasks:
+    for task_info in config['tasks']:
         task_results = {}
+        task_class = task_class_dict[task_info['name']]
+        workloads = [int(w.strip()) for w in task_info['workloads'].split(',')]
         for workload in workloads:
             workload_results = []
             for seed in seeds:
-                print(f"Running {task_name} with workload {workload}, seed {seed}")
+                print(f"Running {task_info['name']} with workload {workload}, seed {seed}")
                 
                 task = task_class(
-                    task_name=task_name,
-                    budget_type='FEs',
-                    budget=220,
+                    task_name=task_info['name'],
+                    budget_type=task_info['budget_type'],
+                    budget=task_info['budget'],
                     seed=seed,
                     workload=workload,
-                    params={'input_dim': input_dim}
+                    description=task_info['description'],
+                    params={'input_dim': int(task_info['num_vars'])}
                 )
 
                 # Create search space
@@ -98,13 +88,16 @@ if __name__ == "__main__":
                 trials = Trials()
                 np.random.seed(seed)
                 
+                start_time = time.time()
                 best = fmin(fn=objective,
                             space=search_space,
                             algo=tpe.suggest,
-                            max_evals=220,
+                            max_evals=int(task_info['budget']),
                             trials=trials,
                             rstate=np.random.default_rng(seed))
-                
+                end_time = time.time()
+                optimization_time = end_time - start_time
+
                 # Collect optimization history
                 history = []
                 for trial in trials.trials:
@@ -117,21 +110,22 @@ if __name__ == "__main__":
                 result =  {
                     'best_params': best,
                     'best_value': float(1 - min(trials.losses())),
-                    'history': history
+                    'history': history,
+                    'optimization_time': optimization_time
                 }
                 
                 # Save result immediately after each task completion
-                task_dir = os.path.join(results_dir, task_name)
+                task_dir = os.path.join(results_dir, task_info['name'])
                 os.makedirs(task_dir, exist_ok=True)
                 workload_dir = os.path.join(task_dir, f"workload_{workload}")
                 os.makedirs(workload_dir, exist_ok=True)
                 
-                filename = f"{task_name}_workload_{workload}_seed_{seed}.json"
+                filename = f"{task_info['name']}_workload_{workload}_seed_{seed}.json"
                 filepath = os.path.join(workload_dir, filename)
                 
                 with open(filepath, 'w') as f:
                     json.dump({
-                        'task_name': task_name,
+                        'task_name': task_info['name'],
                         'workload': workload,
                         'seed': seed,
                         'result': result
@@ -139,13 +133,12 @@ if __name__ == "__main__":
                 
                 print(f"Saved result to {filepath}")
                 
-                # result = run_experiment(task_name, task_class, input_dim, workload, seed)
                 workload_results.append({
                     'seed': seed,
                     'result': result
                 })
             task_results[f'workload_{workload}'] = workload_results
-        all_results[task_name] = task_results
+        all_results[task_info['name']] = task_results
     
     # Save results
     with open(f"{results_dir}/results.json", 'w') as f:

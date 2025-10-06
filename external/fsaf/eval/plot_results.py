@@ -20,7 +20,7 @@ import os
 from matplotlib import pyplot as plt
 import pickle as pkl
 import numpy as np
-from fsaf.eval.evaluate import Result  # for unpickling
+from external.fsaf.eval.evaluate import Result  # for unpickling
 import pandas as pd
 
 def plot_results(path, logplot=False,name="",limit_y = None):
