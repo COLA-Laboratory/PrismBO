@@ -112,7 +112,7 @@ if __name__ == "__main__":
                 
                 result =  {
                     'best_params': best,
-                    'best_value': float(1 - min(trials.losses())),
+                    'best_value': float(min(trials.losses())),
                     'history': history,
                     'optimization_time': optimization_time
                 }
