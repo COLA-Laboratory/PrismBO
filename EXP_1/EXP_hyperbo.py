@@ -18,6 +18,7 @@ import numpy as np
 import os
 import json
 from datetime import datetime
+from GPy.kern import RBF
 
 import jaxopt
 import tqdm
@@ -42,7 +43,19 @@ from external.hyperbo.gp_utils import mean
 from prismbo.optimizer.initialization.random import RandomSampler
 
 from typing import Callable, Optional, Sequence, Tuple, Union, Any
+from external.transfergpbo.models import (
+    TaskData,
+    WrapperBase,
+    MHGP,
+    SHGP,
+    BHGP,
+    MTGP,
+)
+from external.transfergpbo.bo.run_bo import run_bo
+from external.transfergpbo import models, benchmarks
+from external.transfergpbo.parameters import parameters as params
 
+from emukit.core import ParameterSpace, ContinuousParameter
 
 
 import jax
@@ -58,7 +71,12 @@ from external.hyperbo.bo_utils import bayesopt
 
 from prismbo.benchmark.synthetic.singleobj import *
 
+from prismbo.benchmark.hpo import * 
+from prismbo.benchmark.csstuning.compiler import LLVMTuning, GCCTuning
+from prismbo.benchmark.csstuning.dbms import MySQLTuning
+from prismbo.benchmark.synthetic.singleobj import *
 
+from emukit.core import ParameterSpace, ContinuousParameter
 
 
 DEFAULT_WARP_FUNC = utils.DEFAULT_WARP_FUNC
@@ -66,43 +84,86 @@ GPParams = defs.GPParams
 SubDataset = defs.SubDataset
 
 
+task_class_dict = {
+    'Ackley': Ackley,
+    'Rastrigin': Rastrigin,
+    'Rosenbrock': Rosenbrock,
+    'XGBoost': XGBoostBenchmark,
+    'HPO_PINN': HPO_PINN,
+    'HPO_ResNet18': HPO_ResNet18,
+    'HPO_ResNet32': HPO_ResNet32,
+    'CSSTuning_GCC': GCCTuning,
+    'CSSTuning_LLVM': LLVMTuning,
+    'CSSTuning_MySQL': MySQLTuning,
+}
 
-def get_source_data(task_name):
-    task_source = {'Rastrigin': 'Rastrigin_source', 'Schwefel': 'Schwefel_source', 'Ackley': 'Ackley_source', 'Griewank': 'Griewank_source', 'Rosenbrock': 'Rosenbrock_source'}
-    source_name = task_source[task_name]
+CONFIG_FILE = os.path.join("config", "running_config.json")
 
-    datasets = {}
-    with open('Results/datasets.txt', 'r') as f:
-        lines = f.readlines()
-        for i in range(len(lines)):
-            if lines[i].startswith("Experiment:"):
-                experiment_name = lines[i].strip().split(":")[1].strip()
-                dataset_list = []
-                i += 1
-                while i < len(lines) and not lines[i].startswith("-----"):
-                    dataset_list.append(lines[i].strip())
-                    i += 1
-                datasets[experiment_name] = dataset_list
-    Exper_folder = 'Results'
-    ab = AnalysisBase(Exper_folder, datasets, services.data_manager)
-    ab.read_data_from_db()
+
+def read_config():
+    with open(CONFIG_FILE, 'r') as f:
+        config = json.load(f)
+        return {
+            'tasks': config.get('tasks'),
+            'optimizer': config.get('optimizer'),
+            'seeds': config.get('seeds', '42'),
+            'remote': config.get('remote', False),
+            'server_url': config.get('server_url', ''),
+            'experimentName': config.get('experimentName', ''),
+        }
+
+def get_model(
+    model_name: str, space: ParameterSpace) -> WrapperBase:
+    """Create the model object."""
+    model_class = getattr(models, model_name)
+    if model_class == MHGP or model_class == SHGP or model_class == BHGP:
+        model = model_class(space.dimensionality)
+    else:
+        kernel = RBF(space.dimensionality)
+        model = model_class(kernel=kernel)
+    model = WrapperBase(model)
+    return model
+
+
+
+
+
+# def get_source_data(task_name):
+#     task_source = {'Rastrigin': 'Rastrigin_source', 'Schwefel': 'Schwefel_source', 'Ackley': 'Ackley_source', 'Griewank': 'Griewank_source', 'Rosenbrock': 'Rosenbrock_source'}
+#     source_name = task_source[task_name]
+
+#     datasets = {}
+#     with open('Results/datasets.txt', 'r') as f:
+#         lines = f.readlines()
+#         for i in range(len(lines)):
+#             if lines[i].startswith("Experiment:"):
+#                 experiment_name = lines[i].strip().split(":")[1].strip()
+#                 dataset_list = []
+#                 i += 1
+#                 while i < len(lines) and not lines[i].startswith("-----"):
+#                     dataset_list.append(lines[i].strip())
+#                     i += 1
+#                 datasets[experiment_name] = dataset_list
+#     Exper_folder = 'Results'
+#     ab = AnalysisBase(Exper_folder, datasets, services.data_manager)
+#     ab.read_data_from_db()
     
-    train_data = {}
-    datasets = ab._all_data[source_name]
-    metadata_info = ab._data_infos[source_name]
-    sub_dataset_id = 0
-    for dataset_name, data in datasets.items():
-        objectives = metadata_info[dataset_name]["objectives"]
-        obj = objectives[0]["name"]
+#     train_data = {}
+#     datasets = ab._all_data[source_name]
+#     metadata_info = ab._data_infos[source_name]
+#     sub_dataset_id = 0
+#     for dataset_name, data in datasets.items():
+#         objectives = metadata_info[dataset_name]["objectives"]
+#         obj = objectives[0]["name"]
 
-        obj_data = [d[obj] for d in data]
-        var_data = [[d[var["name"]] for var in metadata_info[dataset_name]["variables"]] for d in data]
-        input_size = metadata_info[dataset_name]['num_variables']
-        X = jax.numpy.array(var_data)
-        Y = jax.numpy.array(obj_data)[:, np.newaxis]
-        train_data[str(sub_dataset_id)] = SubDataset(X, Y)
-        sub_dataset_id += 1
-    return train_data
+#         obj_data = [d[obj] for d in data]
+#         var_data = [[d[var["name"]] for var in metadata_info[dataset_name]["variables"]] for d in data]
+#         input_size = metadata_info[dataset_name]['num_variables']
+#         X = jax.numpy.array(var_data)
+#         Y = jax.numpy.array(obj_data)[:, np.newaxis]
+#         train_data[str(sub_dataset_id)] = SubDataset(X, Y)
+#         sub_dataset_id += 1
+#     return train_data
         
 def pretrain_GP(train_data, optimization_method, loss_function, max_training_step):
     #pretrain GP
@@ -181,6 +242,64 @@ def retrain_model(model: gp.GP,
       random_key, get_params_path=get_params_path, callback=callback)
 
 if __name__ == '__main__':    
+    # Experiment settings
+    config = read_config()
+    seeds = [int(s.strip()) for s in config['seeds'].split(',')]  # Multiple seeds for repetition
+
+    # Create results directory
+    results_dir = f"results/hyperbo_{config['experimentName']}"
+    os.makedirs(results_dir, exist_ok=True)
+
+    all_results = {}
+    source_data = {}
+    set_id = 0
+    optimization_method = 'lbfgs'  # @param ['lbfgs', 'adam']
+    loss_function = 'ekl'  # @param ['nll', 'ekl']
+    max_training_step = 1000  #@param{type: "number", isTemplate: true}
+    for task_info in config['tasks']:
+        task_results = {}
+        task_class = task_class_dict[task_info['name']]
+        workloads = [int(w.strip()) for w in task_info['workloads'].split(',')]
+        for workload in workloads:
+            workload_results = []
+            for seed in seeds:
+                print(f"Running {task_info['name']} with workload {workload}, seed {seed}")
+    
+                task = task_class(
+                    task_name=task_info['name'],
+                    budget_type=task_info['budget_type'],
+                    budget=task_info['budget'],
+                    seed=seed,
+                    workload=workload,
+                    description=task_info['description'],
+                    params={'input_dim': int(task_info['num_vars'])}
+                )
+                
+                if len(source_data) > 0:
+                    model = pretrain_GP(source_data, optimization_method, loss_function, max_training_step)
+                else:
+                    
+
+                
+                #get serchspace of the task
+                original_ranges = task.configuration_space.original_ranges
+
+
+                # Initialize dataset for HyperBO
+                search_space = task.configuration_space
+                initial_num = model.input_dim * 11
+                sampler = RandomSampler(config = {})
+                initial_samples = sampler.sample(search_space, n_points=initial_num)
+                query_datasets = [search_space.map_to_design_space(sample) for sample in initial_samples]
+    
+    
+    
+    
+    
+    
+    
+    
+    
     tasks = [
         # ('Rastrigin', Rastrigin, 10),
         ('Schwefel', Schwefel, 10),

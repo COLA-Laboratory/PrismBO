@@ -1,20 +1,19 @@
 from hyperopt import fmin, tpe, hp, STATUS_OK, Trials
-from prismbo.benchmark.csstuning.compiler import LLVMTuning
-from prismbo.benchmark.synthetic.singleobj import *
 import numpy as np
 import json
 import os
 from datetime import datetime
 import time
 from prismbo.benchmark.hpo import * 
-import prismbo.benchmark.synthetic
-from prismbo.benchmark.csstuning import *
+from prismbo.benchmark.csstuning.compiler import LLVMTuning, GCCTuning
+from prismbo.benchmark.csstuning.dbms import MySQLTuning
+from prismbo.benchmark.synthetic.singleobj import *
 
 task_class_dict = {
     'Ackley': Ackley,
     'Rastrigin': Rastrigin,
     'Rosenbrock': Rosenbrock,
-    'XGBoost': XGBoostBenchmark,
+    'XGB': XGBoostBenchmark,
     'HPO_PINN': HPO_PINN,
     'HPO_ResNet18': HPO_ResNet18,
     'HPO_ResNet32': HPO_ResNet32,
@@ -42,7 +41,9 @@ def read_config():
 
 
 def objective(params):
-    result = task.objective_function(configuration=params)
+    configuration = [params[v] for v in task.configuration_space.variables_order]
+    configuration = task.configuration_space.map_to_design_space(configuration)
+    result = task.objective_function(configuration=configuration)
     return {'loss': result['f1'], 'status': STATUS_OK}
 
 def get_hyperopt_space():
@@ -51,46 +52,6 @@ def get_hyperopt_space():
     for param_name, param_range in original_ranges.items():
         space[param_name] = hp.uniform(param_name, param_range[0], param_range[1])
     return space
-
-def run_experiment(task_name, task_class, input_dim, workload, seed, n_iterations=200):
-    # Create task instance
-    task = task_class(
-        task_name=task_name,
-        budget_type='FEs',
-        budget=220,
-        seed=seed,
-        workload=workload,
-        params={'input_dim': input_dim}
-    )
-    
-    # Create search space
-    search_space = get_hyperopt_space()
-    
-    # Run optimization
-    trials = Trials()
-    np.random.seed(seed)
-    
-    best = fmin(fn=objective,
-                space=search_space,
-                algo=tpe.suggest,
-                max_evals=n_iterations,
-                trials=trials,
-                rstate=np.random.default_rng(seed))
-    
-    # Collect optimization history
-    history = []
-    for trial in trials.trials:
-        history.append({
-            'iteration': trial['tid'],
-            'params': trial['misc']['vals'],
-            'loss': trial['result']['loss']
-        })
-    
-    return {
-        'best_params': best,
-        'best_value': float(1 - min(trials.losses())),
-        'history': history
-    }
 
 if __name__ == "__main__":
     # Experiment settings
@@ -174,7 +135,6 @@ if __name__ == "__main__":
                 
                 print(f"Saved result to {filepath}")
                 
-                # result = run_experiment(task_name, task_class, input_dim, workload, seed)
                 workload_results.append({
                     'seed': seed,
                     'result': result
