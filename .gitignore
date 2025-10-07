@@ -23,6 +23,8 @@ var/
 wheels/
 demo/
 external/
+results/
+Results/
 *.egg-info/
 .installed.cfg
 *.egg

@@ -14,7 +14,11 @@ class Wave2D(PDE):
     def range(self):
         return torch.tensor([[0., 1.], [0., 1.]])
 
-    def pde(self, x, u):
+    @property
+    def mu_range(self):
+        return (0.005, 1.0)
+
+    def pde(self, x, u, mu):
         x.requires_grad_(True)
         du = torch.autograd.grad(u, x, torch.ones_like(u), create_graph=True, retain_graph=True)[0]
         du_t = du[:, 1:2]
@@ -23,17 +27,17 @@ class Wave2D(PDE):
         du_xx = torch.autograd.grad(du_x, x, torch.ones_like(du_x), create_graph=True)[0][:, 0:1]
         return du_tt - 4 * du_xx
     
-    def ic(self, x, u):
+    def ic(self, x, u, mu):
         x.requires_grad_(True)
         du = torch.autograd.grad(u, x, torch.ones_like(u), create_graph=True, retain_graph=True)[0]
         ic1 = du[:, 1:2]
         ic2 = torch.sin(torch.pi * x[:, 0:1]) + 0.5 * torch.sin(self.beta * torch.pi * x[:, 0:1]) - u
         return torch.mean((ic1) ** 2) + torch.mean((ic2) ** 2)
 
-    def bc(self, x, u):
+    def bc(self, x, u, mu):
         return torch.mean(u ** 2)
     
-    def analytic_func(self, x):
+    def analytic_func(self, x, mu):
         x_coord = x[:, 0:1]
         t_coord = x[:, 1:2]
         pi = torch.tensor(np.pi)

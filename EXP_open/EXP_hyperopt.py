@@ -46,11 +46,12 @@ def objective(params):
     result = task.objective_function(configuration=configuration)
     return {'loss': result['f1'], 'status': STATUS_OK}
 
-def get_hyperopt_space():
+def get_hyperopt_space(task):
     original_ranges = task.configuration_space.original_ranges
+    variables_orders = task.configuration_space.variables_order
     space = {}
-    for param_name, param_range in original_ranges.items():
-        space[param_name] = hp.uniform(param_name, param_range[0], param_range[1])
+    for param_name in variables_orders:
+        space[param_name] = hp.uniform(param_name, original_ranges[param_name][0], original_ranges[param_name][1])
     return space
 
 if __name__ == "__main__":
@@ -84,7 +85,7 @@ if __name__ == "__main__":
                 )
 
                 # Create search space
-                search_space = get_hyperopt_space()
+                search_space = get_hyperopt_space(task)
                 
                 # Run optimization
                 trials = Trials()

@@ -56,7 +56,8 @@ class GCCTuning(NonTabularProblem):
     
     def get_objectives(self) -> dict:
         return {
-            "f1": "minimize",
+            
+            "execution_time": "minimize",
             # "compilation_time": "minimize",
             # "file_size": "minimize",
             # "maxrss": "minimize",
@@ -74,10 +75,10 @@ class GCCTuning(NonTabularProblem):
     def objective_function(self, configuration: dict, fidelity = None, seed = None, **kwargs):        
         try:
             perf = self.benchmark.run(configuration)
-            return {obj: perf.get(obj, 1e10) for obj in self.get_objectives()}
+            return {'f1': perf.get('execution_time', 1e10)}
         
         except Exception as e:
-            return {obj: 1e10 for obj in self.get_objectives()}
+            return {'f1': 1e10}
         
 
 
@@ -129,7 +130,7 @@ class LLVMTuning(NonTabularProblem):
     
     def get_objectives(self) -> dict:
         return {
-            "f1": "minimize",
+            "execution_time": "minimize",
             # "compilation_time": "minimize",
             # "file_size": "minimize",
         }
@@ -140,9 +141,9 @@ class LLVMTuning(NonTabularProblem):
     def objective_function(self, configuration: dict, fidelity = None, seed = None, **kwargs): 
         try:
             perf = self.benchmark.run(configuration)
-            return {obj: perf.get(obj, 1e10) for obj in self.get_objectives()}
+            return {'f1': perf.get('execution_time', 1e10)}
         except Exception as e:
-            return {obj: 1e10 for obj in self.get_objectives()}
+            return {'f1': 1e10}
 
 
 if __name__ == "__main__":

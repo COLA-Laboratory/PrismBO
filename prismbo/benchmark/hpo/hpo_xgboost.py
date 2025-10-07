@@ -28,7 +28,7 @@ logger = logging.getLogger('XGBBenchmark')
 class XGBoostBenchmark(NonTabularProblem):
     task_lists = [167149, 167152, 126029, 167178, 167177, 167153, 167154, 167155, 167156]
     problem_type = 'hpo'
-    num_variables = 10
+    num_variables = 5
     num_objectives = 1
     workloads = []
     fidelity = None
@@ -229,7 +229,7 @@ class XGBoostBenchmark(NonTabularProblem):
         test_loss = 1 - self.accuracy_scorer(model, self.x_test, self.y_test)
         cost = time.time() - start
 
-        return {'function_value': float(test_loss),
+        return {'f1': float(test_loss),
                 'cost': cost,
                 'info': {'fidelity': fidelity}}
 
@@ -252,12 +252,13 @@ class XGBoostBenchmark(NonTabularProblem):
                    Integer('max_depth', [1, 15]),
                    Continuous('min_child_weight', [0.0, 7.0]),
                    Continuous('colsample_bytree', [0.01, 1.0]),
-                   Continuous('colsample_bylevel', [0.01, 1.0]),
-                   Continuous('reg_lambda', [-10.0, 10.0]),
-                   Continuous('reg_alpha', [-10.0, 10.0]),
+                #    Continuous('colsample_bylevel', [0.01, 1.0]),
+                #    Continuous('reg_lambda', [-10.0, 10.0]),
+                #    Continuous('reg_alpha', [-10.0, 10.0]),
                    Continuous('subsample_per_it', [0.1, 1.0]),
-                   Integer('n_estimators', [1, 50]),
-                   Continuous('gamma', [0.0, 1.0])]
+                #    Integer('n_estimators', [1, 50]),
+                #    Continuous('gamma', [0.0, 1.0])
+                ]
         ss = SearchSpace(variables)
         return ss
 
@@ -310,45 +311,13 @@ class XGBoostBenchmark(NonTabularProblem):
                 'task_id': self.task_id
                 }
 
-    def _get_pipeline(self, max_depth: int, eta: float, min_child_weight: int,
-                      colsample_bytree: float, colsample_bylevel: float, reg_lambda: int, reg_alpha: int,
-                      n_estimators: int, subsample_per_it: float, gamma: float) \
+    def _get_pipeline(self, max_depth: int, eta: float, min_child_weight: int, subsample_per_it: float,
+                      colsample_bytree: float, colsample_bylevel: float = 1, reg_lambda: int = 0, reg_alpha: int = 0, n_estimators: int = 100, gamma: float = 0) \
             -> pipeline.Pipeline:
         """ Create the scikit-learn (training-)pipeline """
         objective = 'binary:logistic' if self.num_class <= 2 else 'multi:softmax'
 
-        if torch.cuda.is_available():
-            clf = pipeline.Pipeline([
-                ('preprocess_impute',
-                 ColumnTransformer([
-                     ("categorical", "passthrough", self.categorical_data),
-                     ("continuous", SimpleImputer(strategy="mean"), ~self.categorical_data)])),
-                ('preprocess_one_hot',
-                 ColumnTransformer([
-                     ("categorical", OneHotEncoder(categories=self.categories), self.categorical_data),
-                     ("continuous", "passthrough", ~self.categorical_data)])),
-                ('xgb',
-                 xgb.XGBClassifier(
-                     max_depth=max_depth,
-                     learning_rate=np.exp2(eta),
-                     min_child_weight=np.exp2(min_child_weight),
-                     colsample_bytree=colsample_bytree,
-                     colsample_bylevel=colsample_bylevel,
-                     reg_alpha=np.exp2(reg_alpha),
-                     reg_lambda=np.exp2(reg_lambda),
-                     n_estimators=n_estimators,
-                     objective=objective,
-                     n_jobs=self.n_threads,
-                     random_state=self.seed,
-                     num_class=self.num_class,
-                     subsample=subsample_per_it,
-                     gamma=gamma,
-                     tree_method='gpu_hist',
-                     gpu_id=0
-                 ))
-            ])
-        else:
-            clf = pipeline.Pipeline([
+        clf = pipeline.Pipeline([
                 ('preprocess_impute',
                  ColumnTransformer([
                      ("categorical", "passthrough", self.categorical_data),
@@ -379,7 +348,7 @@ class XGBoostBenchmark(NonTabularProblem):
         return clf
 
     def get_objectives(self) -> Dict:
-        return {'train_loss': 'minimize'}
+        return {'f1': 'minimize'}
     
     def get_problem_type(self):
         return "hpo"

@@ -13,19 +13,23 @@ class Reaction2D(PDE):
     def range(self):
         return torch.tensor([[0., 2 * torch.pi], [0., 1.]])
 
-    def pde(self, x, y):
+    @property
+    def mu_range(self):
+        return (0.005, 1.0)
+
+    def pde(self, x, y, mu):
         x.requires_grad_(True)
         dy = torch.autograd.grad(y, x, torch.ones_like(y), create_graph=True)[0]
         dy_t = dy[:, 1:2]
         return dy_t - self.rho * y * (1 - y)
     
-    def bc(self, x, y):
+    def bc(self, x, y, mu):
         return torch.mean(y ** 2)
     
-    def ic(self, x, y):
+    def ic(self, x, y, mu):
         return torch.mean(y ** 2)
     
-    def analytic_func(self, x):
+    def analytic_func(self, x, mu):
         h = torch.exp(-(x[:, 0:1] - torch.pi) ** 2 / (2 * (torch.pi / 4) ** 2))
         return h * torch.exp(self.rho * x[:, 1:2]) / (h * torch.exp(self.rho * x[:, 1:2]) + 1 - h)
 

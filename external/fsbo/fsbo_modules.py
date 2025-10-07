@@ -32,12 +32,12 @@ RandomTaskGenerator = np.random.RandomState(413)
 
 
 class DeepKernelGP(nn.Module):
-    def __init__(self, input_size,seed, hidden_size = [32,32,32,32],
+    def __init__(self, input_size,seed, task_space, hidden_size = [32,32,32,32],
                          max_patience = 16, kernel="matern", ard = False, nu =2.5, loss_tol = 0.0001,
-                         lr = 0.001, load_model = False, checkpoint = None, epochs = 10000,
-                         verbose = False, eval_batch_size = 1000, xgb_path = None):
+                         lr = 0.001, load_model = False, checkpoint = None, epochs = 10000, verbose = False, eval_batch_size = 1000, xgb_path = None):
         super(DeepKernelGP, self).__init__()
         torch.manual_seed(seed)
+        self.task_space = task_space
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.input_size = input_size
         self.hidden_size = hidden_size
@@ -112,10 +112,9 @@ class DeepKernelGP(nn.Module):
         return losses
     
     def load_checkpoint(self, checkpoint):
-        ckpt = torch.load(checkpoint,map_location=torch.device(self.device))
-        self.model.load_state_dict(ckpt['gp'],strict=False)
-        self.likelihood.load_state_dict(ckpt['likelihood'],strict=False)
-        self.feature_extractor.load_state_dict(ckpt['net'],strict=False)
+        self.model.load_state_dict(torch.load(checkpoint + "_gp.pt", map_location=self.device), strict=False)
+        self.likelihood.load_state_dict(torch.load(checkpoint + "_likelihood.pt", map_location=self.device), strict=False)
+        self.feature_extractor.load_state_dict(torch.load(checkpoint + "_net.pt", map_location=self.device), strict=False)
         
     def predict(self, X_pen):
         self.model.eval()
@@ -159,7 +158,7 @@ class DeepKernelGP(nn.Module):
             best_f = torch.max(self.y_obs).item()
     
             self.train()
-            bounds = tuple([(0,1) for i in range(dim)])
+            bounds = tuple([(self.task_space.original_ranges[i][0], self.task_space.original_ranges[i][1]) for i in self.task_space.variables_order])
         
             def acqf(x):
                 #x = np.array(x).reshape(-1,dim)
@@ -174,7 +173,7 @@ class DeepKernelGP(nn.Module):
             return new_x
 
     def continuous_maximization( self, dim, bounds, acqf):
-        result = differential_evolution(acqf, bounds=bounds, updating='immediate',workers=1, maxiter=20000, init="sobol")
+        result = differential_evolution(acqf, bounds=bounds, updating='immediate',workers=1, maxiter=1000, init="sobol")
         return result.x.reshape(-1,dim)
 
     
@@ -327,13 +326,14 @@ class FSBO(nn.Module):
         gp_state_dict         = self.model.state_dict()
         likelihood_state_dict = self.likelihood.state_dict()
         nn_state_dict         = self.feature_extractor.state_dict()
-        torch.save({'gp': gp_state_dict, 'likelihood': likelihood_state_dict, 'net':nn_state_dict}, checkpoint)
+        torch.save(gp_state_dict, checkpoint + "_gp.pt")
+        torch.save(likelihood_state_dict, checkpoint + "_likelihood.pt")
+        torch.save(nn_state_dict, checkpoint + "_net.pt")
 
     def load_checkpoint(self, checkpoint):
-        ckpt = torch.load(checkpoint)
-        self.model.load_state_dict(ckpt['gp'])
-        self.likelihood.load_state_dict(ckpt['likelihood'])
-        self.feature_extractor.load_state_dict(ckpt['net'])
+        self.model.load_state_dict(torch.load(checkpoint + "_gp.pt", map_location=self.device), strict=False)
+        self.likelihood.load_state_dict(torch.load(checkpoint + "_likelihood.pt", map_location=self.device), strict=False)
+        self.feature_extractor.load_state_dict(torch.load(checkpoint + "_net.pt", map_location=self.device), strict=False)
 
 class ExactGPLayer(gpytorch.models.ExactGP):
     def __init__(self, train_x, train_y, likelihood,config,dims ):

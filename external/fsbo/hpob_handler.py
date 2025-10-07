@@ -220,8 +220,9 @@ class HPOBHandler:
             max_accuracy_history.append(best_f)
 
             new_x = bo_method.observe_and_suggest(x_observed, y_tf_observed)
+            param_dict = task.configuration_space.map_to_design_space(new_x[0])
             # x_q = xgb.DMatrix(new_x.reshape(-1,dim))
-            new_y = task.objective_function(new_x)
+            new_y = task.objective_function(param_dict)['f1']
 
             y_observed = np.append(y_observed, new_y).reshape(-1,1)
             x_observed = np.append(x_observed, new_x).reshape(-1,x_observed.shape[1])
@@ -234,7 +235,7 @@ class HPOBHandler:
         max_accuracy_history.append(best_f)
         max_accuracy_history+=[1]*(n_trials-i-1)
 
-        return max_accuracy_history
+        return max_accuracy_history, x_observed, y_observed
 
     def get_search_spaces(self):
         return list(self.meta_test_data.keys())

@@ -55,9 +55,10 @@ def make_objective(task):
 def get_configspace(task):
     space = ConfigurationSpace()
     original_ranges = task.configuration_space.original_ranges
-    for param_name, (lo, hi) in original_ranges.items():
+    orders = task.configuration_space.variables_order
+    for param_name in orders:
         space.add_hyperparameter(
-            cs.UniformFloatHyperparameter(param_name, lower=lo, upper=hi)
+            cs.UniformFloatHyperparameter(param_name, lower=original_ranges[param_name][0], upper=original_ranges[param_name][1])
         )
     return space
 

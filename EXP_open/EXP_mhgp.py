@@ -137,7 +137,7 @@ if __name__ == "__main__":
                 )
 
                 # Create search space
-                space = ParameterSpace([ContinuousParameter(k, var[0], var[1]) for k, var in task.configuration_space.original_ranges.items()])
+                space = ParameterSpace([ContinuousParameter(k, task.configuration_space.original_ranges[k][0], task.configuration_space.original_ranges[k][1]) for k in task.configuration_space.variables_order])
 
                 # Build model
                 model = get_model('MHGP', space)

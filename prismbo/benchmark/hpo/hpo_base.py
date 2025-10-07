@@ -72,10 +72,10 @@ class HPO_base(NonTabularProblem):
     ARCHITECTURES = SUPPORTED_ARCHITECTURES
     
     DATASETS = [
-    "Cifar10",
-    "Cifar100",
-    "MNIST",
-    "ImageNet",
+    "Cifar10Wrapper",
+    "Cifar100Wrapper",
+    "MNISTWrapper",
+    "ImageNetWrapper",
     ]
 
     def __init__(
@@ -156,13 +156,13 @@ class HPO_base(NonTabularProblem):
         print(f"Using device: {self.device}")
         
         if self.dataset_name in vars(datasets):
-            self.dataset = vars(datasets)[self.dataset_name+'Wrapper'](root=self.data_dir, augment=kwargs.get('augment', None))
+            self.dataset = vars(datasets)[self.dataset_name](root=self.data_dir, augment=kwargs.get('augment', None))
         else:
             raise NotImplementedError
         
         print(f"Using augment: {kwargs.get('augment', None)}")
         
-        self.eval_loaders = self.create_test_loaders(128)
+        self.test_loader = self.create_test_loaders(128)
 
         self.checkpoint_vals = collections.defaultdict(lambda: [])
         
@@ -362,8 +362,7 @@ class HPO_base(NonTabularProblem):
         }
 
         # Evaluate on all test loaders
-        for name, loader in zip(self.eval_loader_names, self.eval_loaders):
-            results[f'{name}_acc'] = self.evaluate_loader(loader)
+        results[f'val_acc'] = self.evaluate_loader(self.test_loader)
 
         # Calculate memory usage
         results['mem_gb'] = torch.cuda.max_memory_allocated() / (1024.**3)
@@ -430,7 +429,7 @@ class HPO_base(NonTabularProblem):
     ) -> Dict:
 
         if fidelity is None:
-            fidelity = {"epoch": 500}
+            fidelity = {"epoch": 10}
         
         print(f'fidelity:{fidelity}')
         
@@ -444,21 +443,12 @@ class HPO_base(NonTabularProblem):
         
         val_acc, results = self.get_score(configuration)
 
-        acc = {list(self.objective_info.keys())[0]: float(val_acc)}
-        
-        # Add standard test accuracy
-        acc['test_standard_acc'] = float(results['test_standard_acc'])
-        
-        # Calculate average of other test accuracies
-        other_test_accs = [v for k, v in results.items() if k.startswith('test_') and k != 'test_standard_acc']
-        if other_test_accs:
-            acc['test_robust_acc'] = float(sum(other_test_accs) / len(other_test_accs))
-        
+        acc = {'f1': float(val_acc)}
         
         return acc
     
     def get_objectives(self) -> Dict:
-        return {'function_value': 'minimize'}
+        return {'f1': 'minimize'}
     
     def get_problem_type(self):
         return "hpo"

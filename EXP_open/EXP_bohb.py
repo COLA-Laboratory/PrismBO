@@ -51,7 +51,8 @@ def make_objective(task):
 # Define the configuration space
 def get_configspace(task):
     original_ranges = task.configuration_space.original_ranges
-    hyperparameters = [cs.UniformHyperparameter(param_name, lower=param_range[0], upper=param_range[1]) for param_name, param_range in original_ranges.items() ]
+    variables_orders = task.configuration_space.variables_order
+    hyperparameters = [cs.UniformHyperparameter(param_name, lower=original_ranges[param_name][0], upper=original_ranges[param_name][1]) for param_name in variables_orders]
     space = cs.ConfigurationSpace(hyperparameters)
     
     return space

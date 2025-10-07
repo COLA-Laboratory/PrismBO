@@ -46,8 +46,7 @@ def read_config():
 
 # Define the configuration space
 def get_configspace(task):
-    original_ranges = task.configuration_space.original_ranges
-    hyperparameters = [cs.UniformFloatHyperparameter(param_name, lower=param_range[0], upper=param_range[1]) for param_name, param_range in original_ranges.items() ]
+    hyperparameters = [cs.UniformFloatHyperparameter(param_name, lower=task.configuration_space.original_ranges[param_name][0], upper=task.configuration_space.original_ranges[param_name][1]) for param_name in task.configuration_space.variables_order]
     space = cs.ConfigurationSpace(hyperparameters)
     
     return space

@@ -17,9 +17,6 @@ class Burgers2D(PDE):
     def mu_range(self):
         return (0.005, 1.0)
     
-    @property
-    def num_mu(self):
-        return 64
     
     def pde(self, x, y, mu):
         x.requires_grad_(True)

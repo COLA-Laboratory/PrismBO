@@ -455,12 +455,12 @@ class HPO_PINN(NonTabularProblem):
         configuration["epoch"] = fidelity["epoch"]        
         test_loss, results = self.get_score(configuration)
 
-        loss = {list(self.objective_info.keys())[0]: float(test_loss)}
+        loss = {'f1': float(test_loss)}
         
         return loss
     
     def get_objectives(self) -> Dict:
-        return {'function_value': 'minimize'}
+        return {'f1': 'minimize'}
     
     def get_problem_type(self):
         return "hpo"

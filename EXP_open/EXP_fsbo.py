@@ -101,13 +101,7 @@ def make_objective(task):
         return result['f1']
     return objective
 
-# Define the configuration space
-def get_configspace(task):
-    original_ranges = task.configuration_space.original_ranges
-    hyperparameters = [cs.UniformHyperparameter(param_name, lower=param_range[0], upper=param_range[1]) for param_name, param_range in original_ranges.items() ]
-    space = cs.ConfigurationSpace(hyperparameters)
-    
-    return space
+
 
 
 class objective_function4GPBO():
@@ -118,7 +112,7 @@ class objective_function4GPBO():
     
     def f(self, X, **kwargs):
         Y = []
-        query_datasets = [self.search_space.map_to_design_space(sample) for sample in X]
+        query_datasets = [self.search_space.map_to_design_space(sample.tolist()) for sample in X]
         Y = np.array([[self.task.objective_function(data)['f1'] for data in query_datasets]])
         return Y
 
@@ -161,7 +155,8 @@ class task_wrapper():
         result = {
             'best_params': trajectory[best_idx]['params'],
             'best_value': trajectory[best_idx]['loss'], 
-            'history': trajectory
+            'history': trajectory,
+            'optimization_time': start_time - end_time
         }
         
         # Save updated result to file
@@ -176,16 +171,17 @@ class task_wrapper():
         return Y
 
 
-def meta_train(rootdir, epochs, task_name, train_data, valid_data):
+def meta_train(ckpt_path, epochs, task_name, train_data, valid_data):
     np.random.seed(123)
     torch.manual_seed(123)
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False 
+    os.makedirs(os.path.dirname(ckpt_path), exist_ok=True)
 
-    checkpoint_path = os.path.join(rootdir,"checkpoints.pt")
-    fsbo_model = FSBO(train_data = train_data, valid_data = valid_data, checkpoint_path = checkpoint_path)
+    fsbo_model = FSBO(train_data = train_data, valid_data = valid_data, checkpoint_path = ckpt_path)
     fsbo_model.meta_train(epochs)
-    fsbo_model.save_checkpoint(checkpoint_path)
+    
+    fsbo_model.save_checkpoint(ckpt_path)
 
 
 
@@ -232,10 +228,10 @@ if __name__ == "__main__":
     results_dir = f"results/fsbo_{config['experimentName']}"
     os.makedirs(results_dir, exist_ok=True)
 
-    rootdir     = f'./external/fsbo'
+    data_rootdir     = f'./external/fsbo'
     # checkpoint = os.path.join(rootdir,"checkpoints","FSBO2", '7609')
     load_model = True
-    checkpoint_dir     = f'./results/fsbo/checkpoints/FSBO2/'
+    checkpoint_dir     = f'./results/fsbo/models/'
     os.makedirs(checkpoint_dir, exist_ok=True)
 
 
@@ -243,6 +239,7 @@ if __name__ == "__main__":
     all_results = {}
     source_data = {}
     set_id = 0
+    ini_num = 20
     for task_info in config['tasks']:
         task_name = task_info['name']
         task_results = {}
@@ -279,24 +276,29 @@ if __name__ == "__main__":
                     all_y = all_y[idx]
                     # 80% train, 20% valid
                     split = int(0.8 * all_X.shape[0])
+                    
+                    start_time = time.time()
                     train_data = {'train': {'X': all_X[:split], 'y': all_y[:split]}}
                     valid_data = {'valid': {'X': all_X[split:], 'y': all_y[split:]}}
-                    meta_train(checkpoint_dir, 2000, task_name, train_data, valid_data)
+                    meta_train(checkpoint_dir, 20, task_name, train_data, valid_data)
+                    
                     search_space = task.get_configuration_space()
-                    sampler = RandomSampler(init_num=20, config = {})
+                    sampler = RandomSampler(init_num=ini_num, config = {})
                     ini_X = sampler.sample(search_space)
                     query_datasets = [search_space.map_to_design_space(sample) for sample in ini_X]
                     ini_Y = np.array([task.f(query)['f1'] for query in query_datasets]).reshape(-1, 1)
                     #loads pretrained model from the checkpoint "FSBO",
-                    hpob_hdlr = HPOBHandler(root_dir=rootdir, mode="v3-test" , surrogates_dir=rootdir+"/saved-surrogates/", ini_X=ini_X, ini_Y=ini_Y)
+                    hpob_hdlr = HPOBHandler(root_dir=data_rootdir, mode="v3-test" , surrogates_dir=data_rootdir+"/saved-surrogates/", ini_X=ini_X, ini_Y=ini_Y)
                     #define the DeepKernelGP as HPO method
-                    method = DeepKernelGP(int(task_info['num_vars']), seed, epochs= 100, load_model = load_model, checkpoint = checkpoint_dir, verbose = True)
+                    method = DeepKernelGP(int(task_info['num_vars']), seed, epochs= 20, load_model = load_model, checkpoint = checkpoint_dir, task_space = task.configuration_space, verbose = True)
 
-                    acc = hpob_hdlr.evaluate_continuous(task, method, seed = seed, n_trials = int(task_info['budget']) )
+                    acc, X, Y = hpob_hdlr.evaluate_continuous(task, method, seed = seed, n_trials = int(task_info['budget']) - ini_num)
+                    
+                    end_time = time.time()
                 else:
                     obj = objective_function4GPBO(search_space=task.configuration_space, task=task)
-
-                    space = ParameterSpace([ContinuousParameter(k, var[0], var[1]) for k, var in task.configuration_space.original_ranges.items()])
+                    
+                    space = ParameterSpace([ContinuousParameter(k, task.configuration_space.original_ranges[k][0], task.configuration_space.original_ranges[k][1]) for k in task.configuration_space.variables_order])
                     model = get_model('GPBO', space)
                     start_time = time.time()
                     
@@ -313,6 +315,65 @@ if __name__ == "__main__":
                         'y': Y
                     }
                     set_id += 1
+                    
+                optimization_time = end_time - start_time
+                
+                best_idx = np.argmin(Y[:, 0])
+                bestX = X[best_idx, :].tolist()
+                bestY = Y[best_idx, 0]
+
+                # Convert numpy arrays to lists for JSON serialization
+                bestX_list = bestX.tolist() if isinstance(bestX, np.ndarray) else bestX
+                bestY_item = float(bestY) if isinstance(bestY, (np.floating, np.float32, np.float64, np.ndarray)) else bestY
+
+                # Collect optimization history
+                history = []
+                for i in range(X.shape[0]):
+                    history.append({
+                        'iteration': i,
+                        'params': X[i].tolist(),
+                        'loss': float(Y[i])
+                    })
+                
+                result =  {
+                    'best_params': bestX,
+                    'best_value': bestY,
+                    'history': history,
+                    'optimization_time': optimization_time
+                }
+                
+                current_result = {
+                    'task_name': task_info['name'],
+                    'workload': workload,
+                    'seed': seed,
+                    'result': result,
+                }
+                
+                single_result_file = (
+                    f"{results_dir}/{task_info['name']}/workload_{workload}/"
+                    f"{task_info['name']}_workload_{workload}_seed_{seed}.json"
+                )
+                os.makedirs(os.path.dirname(single_result_file), exist_ok=True)
+                with open(single_result_file, 'w') as f:
+                    json.dump(current_result, f, indent=2)
+                print(f"Saved result to {single_result_file}")
+
+                workload_results.append(result)
+
+            task_results[f'workload_{workload}'] = workload_results
+
+        all_results[task_info['name']] = task_results
+
+        # 每完成一个任务就保存累积的结果
+        with open(f"{results_dir}/results_{task_info['name']}.json", 'w') as f:
+            json.dump(all_results, f, indent=2)
+        print(f"Saved cumulative results for {task_info['name']}")
+
+    with open(f"{results_dir}/results_complete.json", 'w') as f:
+        json.dump(all_results, f, indent=2)
+                
+                
+                
                 
     #             if len(source_data) > 0:
     #                 start_time = time.time()

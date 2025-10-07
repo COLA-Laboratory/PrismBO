@@ -48,15 +48,9 @@ class MySQLTuning(NonTabularProblem):
                     variables.append(ExponentialInteger(knob_name, range_))
                 else:
                     variables.append(Integer(knob_name, range_))
+            else:
+                variables.append(Continuous(knob_name, range_))
 
-            
-            if knob_type == "enum":
-                variables.append(Categorical(knob_name, range_))
-            elif knob_type == "integer":
-                if range_[1] > np.iinfo(np.int64).max:
-                    variables.append(ExponentialInteger(knob_name, range_))
-                else:
-                    variables.append(Integer(knob_name, range_))
 
         return SearchSpace(variables)
     
@@ -65,8 +59,8 @@ class MySQLTuning(NonTabularProblem):
     
     def get_objectives(self) -> dict:
         return {
-            "f1": "minimize",
-            # "throughput": "maximize",
+            # "latency": "minimize",
+            "throughput": "maximize",
         }
         
     def get_problem_type(self):
@@ -75,9 +69,9 @@ class MySQLTuning(NonTabularProblem):
     def objective_function(self, configuration: dict, fidelity = None, seed = None, **kwargs):
         try:
             perf = self.benchmark.run(configuration)
-            return {obj: perf.get(obj, 1e10) for obj in self.get_objectives()}
+            return {'f1': -perf.get('throughput', 0)}
         except Exception as e:
-            return {obj: 1e10 for obj in self.get_objectives()}
+            return {'f1': 0}
 
 if __name__ == "__main__":
     a = MySQLTuning('1', 'Num_FEs', 121, 0, 'sibench', knobs=None)

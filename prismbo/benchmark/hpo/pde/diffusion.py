@@ -11,8 +11,12 @@ class Diffusion2D(PDE):
     @property
     def range(self):
         return torch.tensor([[-1., 1.], [0., 1.]])
+    
+    @property
+    def mu_range(self):
+        return (0.005, 1.0)
 
-    def pde(self, x, y):
+    def pde(self, x, y, mu):
         x.requires_grad_(True)
         dy = torch.autograd.grad(y, x, torch.ones_like(y), create_graph=True)[0]
         dy_t = dy[:, 1:2]
@@ -22,13 +26,13 @@ class Diffusion2D(PDE):
                     torch.sin(np.pi * x[:, 0:1]) - (np.pi ** 2) * torch.sin(np.pi * x[:, 0:1]))
         return dy_t - dy_xx + source_term
 
-    def bc(self, x, y):
+    def bc(self, x, y, mu):
         return torch.mean(y ** 2)
     
-    def ic(self, x, y):
+    def ic(self, x, y, mu):
         return torch.mean(y ** 2)
     
-    def analytic_func(self, x):
+    def analytic_func(self, x, mu):
         spatial = torch.sin(np.pi * x[:, 0:1])
         temporal = torch.exp(-x[:, 1:2])
         return spatial * temporal
