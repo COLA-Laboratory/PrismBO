@@ -20,7 +20,7 @@ task_class_dict = {
     'Ackley': Ackley,
     'Rastrigin': Rastrigin,
     'Rosenbrock': Rosenbrock,
-    'XGBoost': XGBoostBenchmark,
+    'XGB': XGBoostBenchmark,
     'HPO_PINN': HPO_PINN,
     'HPO_ResNet18': HPO_ResNet18,
     'HPO_ResNet32': HPO_ResNet32,

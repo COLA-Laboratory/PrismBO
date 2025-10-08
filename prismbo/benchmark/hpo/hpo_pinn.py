@@ -38,7 +38,7 @@ class DeviceAware(ABC):
         if device is None:
             device = default_device()
         self.device = device
-    
+
 
 
 class Serializable:
@@ -151,7 +151,6 @@ class HPO_PINN(NonTabularProblem):
         optimizer = kwargs.pop('optimizer', 'random')
         base_dir = kwargs.pop('base_dir', os.path.expanduser('~'))
         
-        
         self.pde_name = PROBLEMS[workload]
 
         super(HPO_PINN, self).__init__(
@@ -162,29 +161,28 @@ class HPO_PINN(NonTabularProblem):
             workload=workload,
             description=description,
         )
-        
+
         self.query_counter = kwargs.get('query_counter', 0)
         self.hpo_optimizer = kwargs.get('optimizer', 'random')
 
         self.trial_seed = seed
         self.hparams = {}
-        
-        
+
         self.verbose = True
-        
+
         self.data_dir = os.path.join(base_dir, 'prismbo_tmp/data/')
         self.model_save_dir  = os.path.join(base_dir, f'prismbo_tmp/output/models/{self.hpo_optimizer}_PINN_{self.pde_name}_{seed}/')
         self.results_save_dir  = os.path.join(base_dir, f'prismbo_tmp/output/results/{self.hpo_optimizer}_PINN_{self.pde_name}_{seed}/')
-        
+
         print(f"Selected algorithm: {self.hpo_optimizer}, dataset: {self.pde_name}")
-        
+
         os.makedirs(self.model_save_dir, exist_ok=True)
         os.makedirs(self.results_save_dir, exist_ok=True)
 
         random.seed(seed)
         np.random.seed(seed)
         torch.manual_seed(seed)
-        
+
         # Get the GPU ID from hparams, default to 0 if not specified
         gpu_id = kwargs.get('gpu_id', 1)
         if torch.cuda.is_available():
@@ -196,13 +194,13 @@ class HPO_PINN(NonTabularProblem):
                 self.device = torch.device("cpu")
         else:
             self.device = torch.device("cpu")
-        
+
         print(f"Using device: {self.device}")
-        
+
         self.hparams['device'] = str(self.device)
-        
+
         print(f"Using device: {self.device}")
-        
+
         if self.pde_name in pde_classes:
             self.pde = pde_classes[self.pde_name]()
         else:
@@ -210,8 +208,7 @@ class HPO_PINN(NonTabularProblem):
         
         range_mu = self.pde.mu_range
         self.mu = np.random.uniform(range_mu[0], range_mu[1])
-                
-
+    
         self.checkpoint_vals = collections.defaultdict(lambda: [])
 
     # Initialization
@@ -220,7 +217,7 @@ class HPO_PINN(NonTabularProblem):
             torch.nn.init.xavier_uniform_(m.weight)
             m.bias.data.fill_(0.01)
 
-    
+
     def save_checkpoint(self, filename):
         save_dict = {
             "model_hparams": self.hparams,
@@ -235,9 +232,11 @@ class HPO_PINN(NonTabularProblem):
         hparam_space = {}
         hparam_space['lr'] = ('log', (-6, -2))
         hparam_space['weight_decay'] = ('log', (-7, -4))
-        # hparam_space['momentum'] = ('float', (0.5, 0.999))
         hparam_space['batch_size'] = ('categorical', [10, 20, 40, 100])
-        
+        hparam_space['lambda'] = ('float', (0, 1))
+        hparam_space['epoch'] = ('categorical', (400, 800, 1000, 2000, 4000))
+
+
         variables = []
 
         for name, (hparam_type, range) in hparam_space.items():
@@ -252,8 +251,7 @@ class HPO_PINN(NonTabularProblem):
 
         ss = SearchSpace(variables)
         return ss
-    
-    
+        
     def get_fidelity_space(
         self, seed: Union[int, None] = None):
 
@@ -267,25 +265,27 @@ class HPO_PINN(NonTabularProblem):
         torch.backends.cudnn.benchmark = False
         self.epoches = configuration['epoch']
         self.batch_size = configuration['batch_size']
+        self.mylambda = configuration['lambda']
+        
         verbose = self.verbose
         if verbose:
             print(f"Total epochs: {self.epoches}")
                 
         self.train_loader = Datasets.pde_dataloader_with_mu(self.pde_name, mu=self.mu, batch_size=self.batch_size, train=True)
-            
+
         best_epoch = 0
         # Lists to store metrics for plotting
         train_losses = []
         test_losses = []
         best_test_loss = float('inf')
-        
+
         for epoch in range(self.epoches):
             epoch_start_time = time.time()
             epoch_loss = 0.0
             total_batches = len(self.train_loader)
             for batch in tqdm(self.train_loader, total=total_batches, desc=f"Epoch {epoch+1}/{self.epoches}", unit="batch"):
                 X_f, mu_f, X_b, mu_b, X_i, mu_i = batch[0], batch[1], batch[2], batch[3], batch[4], batch[5]
-                
+
                 X_f_i = X_f[0].to(self.device)
                 X_b_i = X_b[0].to(self.device)
                 X_i_i = X_i[0].to(self.device)
@@ -294,21 +294,21 @@ class HPO_PINN(NonTabularProblem):
                 X_f_i = X_f_i.requires_grad_(True)
                 X_b_i = X_b_i.requires_grad_(True)
                 X_i_i = X_i_i.requires_grad_(True)
-                
-                
+
+
                 pred_points = self.pinn(X_f_i)
                 pded_residual = self.pde.pde(X_f_i, pred_points, mu)
                 pde_loss = torch.mean(pded_residual ** 2)
 
                 pred_bc = self.pinn(X_b_i)
                 pred_ic = self.pinn(X_i_i)
-                
+
                 bc_loss = self.pde.bc(X_b_i, pred_bc, mu)
                 ic_loss = self.pde.ic(X_i_i, pred_ic, mu)
-                
+
                 data_loss = torch.mean((pred_points - self.pde.analytic_func(X_f_i, mu).to(self.device)) ** 2)
 
-                loss = pde_loss + bc_loss + ic_loss + data_loss
+                loss = self.mylambda * pde_loss + (1 - self.mylambda) * (bc_loss + ic_loss + data_loss)
 
                 epoch_loss += loss
                 self.optim.zero_grad()
@@ -390,11 +390,11 @@ class HPO_PINN(NonTabularProblem):
             X_f_i = X_f[0].to(self.device)
 
             mu = torch.tensor(self.mu).to(self.device)
-            
+
             pred_points = self.pinn(X_f_i)
             data_loss = torch.mean((pred_points - self.pde.analytic_func(X_f_i, mu).to(self.device)) ** 2) 
             test_loss += data_loss
-            
+
         test_loss /= len(self.test_loader)
         return test_loss
             
@@ -444,7 +444,7 @@ class HPO_PINN(NonTabularProblem):
     ) -> Dict:
 
         if fidelity is None:
-            fidelity = {"epoch": 10}
+            fidelity = {"epoch": 2000}
         
         print(f'fidelity:{fidelity}')
         
@@ -458,7 +458,7 @@ class HPO_PINN(NonTabularProblem):
         loss = {'f1': float(test_loss)}
         
         return loss
-    
+
     def get_objectives(self) -> Dict:
         return {'f1': 'minimize'}
     

@@ -30,5 +30,5 @@ class Convection2D(PDE):
     def bc(self, x, y, mu):
         return torch.mean(y ** 2)
 
-    def analytic_func(self, x):
+    def analytic_func(self, x, mu):
         return torch.sin(x[:, 0:1] - self.beta * x[:, 1:2])

@@ -52,7 +52,7 @@ task_class_dict = {
     'Ackley': Ackley,
     'Rastrigin': Rastrigin,
     'Rosenbrock': Rosenbrock,
-    'XGBoost': XGBoostBenchmark,
+    'XGB': XGBoostBenchmark,
     'HPO_PINN': HPO_PINN,
     'HPO_ResNet18': HPO_ResNet18,
     'HPO_ResNet32': HPO_ResNet32,
@@ -180,8 +180,8 @@ if __name__ == "__main__":
                     })
 
                 result = {
-                    'best_params': X[np.argmax(Y)].tolist(),
-                    'best_value': float(np.max(Y)),
+                    'best_params': X[np.argmin(Y)].tolist(),
+                    'best_value': float(np.min(Y)),
                     'history': history,
                     'optimization_time': optimization_time  # You can add timing if needed
                 }

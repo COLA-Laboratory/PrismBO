@@ -54,7 +54,7 @@ task_class_dict = {
     'Ackley': Ackley,
     'Rastrigin': Rastrigin,
     'Rosenbrock': Rosenbrock,
-    'XGBoost': XGBoostBenchmark,
+    'XGB': XGBoostBenchmark,
     'HPO_PINN': HPO_PINN,
     'HPO_ResNet18': HPO_ResNet18,
     'HPO_ResNet32': HPO_ResNet32,
@@ -151,7 +151,7 @@ class task_wrapper():
             })
         
         # Update result with best seen so far
-        best_idx = np.argmax([t['loss'] for t in trajectory])
+        best_idx = np.argmin([t['loss'] for t in trajectory])
         result = {
             'best_params': trajectory[best_idx]['params'],
             'best_value': trajectory[best_idx]['loss'], 

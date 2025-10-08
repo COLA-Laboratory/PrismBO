@@ -346,8 +346,6 @@ class HPO_base(NonTabularProblem):
             plt.savefig(os.path.join(self.results_save_dir, f"{self.filename}_training_curves.png"))
             plt.close()
 
-        checkpoint = torch.load(os.path.join(self.model_save_dir, f"{self.filename}_model.pkl"))
-        self.algorithm.load_state_dict(checkpoint['model_dict'])
 
         # Calculate final results after all epochs
         results = {
@@ -429,7 +427,7 @@ class HPO_base(NonTabularProblem):
     ) -> Dict:
 
         if fidelity is None:
-            fidelity = {"epoch": 10}
+            fidelity = {"epoch": 1}
         
         print(f'fidelity:{fidelity}')
         

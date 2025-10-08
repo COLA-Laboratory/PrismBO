@@ -1,42 +1,6 @@
 {
     "tasks": [
         {
-            "name": "CSSTuning_GCC",
-            "description": "The GNU Compiler Collection (GCC) is a collection of compilers from the GNU Project that support various programming languages, hardware architectures, and operating systems. The Free Software Foundation (FSF) distributes GCC as free software under the GNU General Public License (GNU GPL). GCC is a key component of the GNU toolchain which is used for most projects related to GNU and the Linux kernel. With roughly 15 million lines of code in 2019, GCC is one of the largest free programs in existence.[4] It has played an important role in the growth of free software, as both a tool and an example.",
-            "num_vars": "5",
-            "num_objs": "1",
-            "workloads": "0,1,2,3,4",
-            "budget_type": "function evaluations",
-            "budget": "30"
-        },
-        {
-            "name": "CSSTuning_LLVM",
-            "description": "LLVM is a set of compiler and toolchain technologies that can be used to develop a frontend for any programming language and a backend for any instruction set architecture. LLVM is designed around a language-independent intermediate representation (IR) that serves as a portable, high-level assembly language that can be optimized with a variety of transformations over multiple passes. The name LLVM originally stood for Low Level Virtual Machine. However, the project has since expanded, and the name is no longer an acronym but an orphan initialism.",
-            "num_vars": "5",
-            "num_objs": "1",
-            "workloads": "0,1,2,3,4",
-            "budget_type": "function evaluations",
-            "budget": "30"
-        },
-        {
-            "name": "CSSTuning_MySQL",
-            "description": "MySQL is an open-source relational database management system (RDBMS). Its name is a combination of \"My\", the name of co-founder Michael Widenius's daughter My, and \"SQL\", the acronym for Structured Query Language. A relational database organizes data into one or more data tables in which data may be related to each other; these relations help structure the data. SQL is a language that programmers use to create, modify and extract data from the relational database, as well as control user access to the database. In addition to relational databases and SQL, an RDBMS like MySQL works with an operating system to implement a relational database in a computer's storage system, manages users, allows for network access and facilitates testing database integrity and creation of backups.",
-            "num_vars": "5",
-            "num_objs": "1",
-            "workloads": "0,1,2",
-            "budget_type": "function evaluations",
-            "budget": "50"
-        },
-        {
-            "name": "XGB",
-            "description": "In machine learning, hyperparameter optimization or tuning is the problem of choosing a set of optimal hyperparameters for a learning algorithm. A hyperparameter is a parameter whose value is used to control the learning process, which must be configured before the process starts. XGBoost (eXtreme Gradient Boosting) is an open-source software library which provides a regularizing gradient boosting framework for C++, Java, Python, R, Julia, Perl, and Scala. It works on Linux, Microsoft Windows, and macOS. From the project description, it aims to provide a Scalable, Portable and Distributed Gradient Boosting (GBM, GBRT, GBDT) Library. It runs on a single machine, as well as the distributed processing frameworks Apache Hadoop, Apache Spark, Apache Flink, and Dask. XGBoost gained much popularity and attention in the mid-2010s as the algorithm of choice for many winning teams of machine learning competitions.",
-            "num_vars": "5",
-            "num_objs": "1",
-            "workloads": "0,1,2",
-            "budget_type": "function evaluations",
-            "budget": "110"
-        },
-        {
             "name": "HPO_PINN",
             "description": "In machine learning, hyperparameter optimization or tuning is the problem of choosing a set of optimal hyperparameters for a learning algorithm. A hyperparameter is a parameter whose value is used to control the learning process, which must be configured before the process starts. Physics-informed neural networks (PINNs), also referred to as Theory-Trained Neural Networks (TTNs), are a type of universal function approximators that can embed the knowledge of any physical laws that govern a given data-set in the learning process, and can be described by partial differential equations (PDEs). Low data availability for some biological and engineering problems limit the robustness of conventional machine learning models used for these applications. The prior knowledge of general physical laws acts in the training of neural networks (NNs) as a regularization agent that limits the space of admissible solutions, increasing the generalizability of the function approximation. This way, embedding this prior information into a neural network results in enhancing the information content of the available data, facilitating the learning algorithm to capture the right solution and to generalize well even with a low amount of training examples. For they process continuous spatial and time coordinates and output continuous PDE solutions, they can be categorized as neural fields.",
             "num_vars": "5",
