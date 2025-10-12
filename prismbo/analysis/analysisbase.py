@@ -25,28 +25,21 @@ class Result():
 
 
 class AnalysisBase(abc.ABC, metaclass=abc.ABCMeta):
-    def __init__(self, exper_folder, datasets, data_manager):
-        self._exper_folder = exper_folder
-        self._datasets = datasets
-        self.results = {}
-        self._task_names = set()
-        self._all_data = {}
-        self._data_infos = {}
+    def __init__(self, data_manager):
         self.data_manager = data_manager
-        self.read_data_from_db()
-        self._colors = self.assign_colors_to_datasets()
+        # self.read_data_from_db()
+        # self._colors = self.assign_colors_to_datasets()
 
+    def get_data_by_expame(self, experiment_name):
+        datasets = {}
+        all_datasets = self.data_manager.get_all_datasets()
+        for name in all_datasets:
+            dataset_info = self.data_manager.get_dataset_info(name)
+            if dataset_info['additional_config']['experimentName'] == experiment_name:
+                datasets[name] = self.data_manager.search_datasets_by_name(name)
+        return datasets
+    
 
-    def read_data_from_db(self):
-        for experiment_name, dataset_names in self._datasets.items():
-            self._all_data[experiment_name] = {}
-            self._data_infos[experiment_name] = {}
-            for dataset_name in dataset_names:
-                data = self.data_manager.db.select_data(dataset_name)
-                self._all_data[experiment_name][dataset_name] = data
-                self._data_infos[experiment_name][dataset_name] = self.data_manager.db.query_dataset_info(dataset_name)
-        
-        
 
         
         

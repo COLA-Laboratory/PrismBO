@@ -1,7 +1,7 @@
 import os
 import traceback
 import argparse
-from services import Services
+from prismbo.agent.services import Services
 from prismbo.analysis.pipeline import analysis, comparison, show
 from prismbo.analysis import *
 
@@ -30,6 +30,7 @@ if __name__ == "__main__":
     
     configurations = services.configer.get_configuration()
     results_dir = f'./results/prismbo_{configurations["experimentName"]}'
+    os.makedirs(results_dir, exist_ok=True)
 
     seeds = configurations['seeds'].split(',')
     seeds = [int(seed) for seed in seeds]
@@ -41,16 +42,16 @@ if __name__ == "__main__":
             traceback.print_exc()
 
     os.makedirs(results_dir, exist_ok=True)
-    datasets = []
     experiment_name = configurations["experimentName"]
-
-    with open(f'{results_dir}/datasets.txt', 'a') as f:
+    
+    ab = analysis(services.data_manager)
+    datasets = ab.get_data_by_expame(experiment_name)
+    with open(f'{results_dir}/datasets.txt', 'w') as f:
         f.write(f"Experiment: {experiment_name}\n")
-        for pid, info in services.process_info.items():
-            dataset_list = info['dataset_name']
-            datasets += dataset_list
-            [f.write(f"{dataset}\n") for dataset in dataset_list]
+        for dataset_name, dataset_data in datasets.items():
+            f.write(f"{dataset_name}\n")
         f.write("-----\n")
+    
 
 
     # comparison_experiment_names = ['exp_1']

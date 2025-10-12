@@ -138,8 +138,7 @@ def create_app():
         user_input = data.get("paremeter", "")
 
         task_data = services.get_modules()
-        # with open('transopt/agent/page_service_data/configuration_basic.json', 'r') as file:
-        #     data = json.load(file)
+
         print(services)
         return jsonify(task_data), 200
 
