@@ -6,35 +6,53 @@ from prismbo.agent.registry import sampler_registry
 
 @sampler_registry.register("MI")
 class MetaInitialization(Sampler):
-    def sample(self, search_space, metadata = None, metadata_info = None, ):
+    def sample(self, search_space, metadata=None, metadata_info=None):
+        # Gather sorted idx of the best Y values for each metadata
+        indices_per_task = []
+        X_per_task = []
+        max_points = 0
+        var_names = search_space.variables_order
+
+        # Preprocess: for each dataset, get sorted indices of Y, and create numpy array of X
+        for k, v in metadata.items():
+            candidate_Y = v['Y'].flatten()
+            sorted_indices = np.argsort(candidate_Y)
+            candidate_X = np.array([[point[name] for name in var_names] for point in metadata[k]])
+            indices_per_task.append(sorted_indices)
+            X_per_task.append(candidate_X)
+            max_points = max(max_points, len(sorted_indices))
 
         sample_points = []
-        best_indices = []
-        
-        # Get best points from each metadata
-        for k, v in metadata.items():
-            # Extract Y values (f1) from each data point
-            candidate_Y = np.array([point['f1'] for point in v])
+        used = set()
 
-            # Sort indices by Y values (ascending)
-            sorted_indices = np.argsort(candidate_Y.flatten())
-            best_indices.append((k, sorted_indices))
-            
-        # Collect points until we have enough
-        idx = 0  # Start with best points
-        while len(sample_points) < self.init_num:
-            for k, indices in best_indices:
-                candidate_X = np.array([[point[name] for name in search_space.variables_order] for point in metadata[k]])
+        for rank in range(max_points):
+            for t, indices in enumerate(indices_per_task):
+                if len(sample_points) >= self.init_num:
+                    break
+                if rank < len(indices):
+                    idx = indices[rank]
+                    # 避免重复采样同一个点（如多个dataset有重复或同源点）
+                    x_tuple = tuple(X_per_task[t][idx])
+                    if x_tuple in used:
+                        continue
+                    sample_points.append(X_per_task[t][idx])
+                    used.add(x_tuple)
+            if len(sample_points) >= self.init_num:
+                break
 
-                if idx < len(indices):
-                    # Add the point at current rank if we still need more points
-                    if len(sample_points) < self.init_num:
-                        point = candidate_X[indices[idx]]
-                        sample_points.append(point)
-            idx += 1  # Move to next best points if we need more
-            
+        # 万一不够，再补随机采样
+        if len(sample_points) < self.init_num:
+            left_num = self.init_num - len(sample_points)
+            sampler = qmc.Sobol(d=len(var_names))
+            random_points = sampler.random(n=left_num)
+            for i, name in enumerate(var_names):
+                var_range = search_space.ranges[name]
+                random_points[:, i] = random_points[:, i] * (var_range[1] - var_range[0]) + var_range[0]
+                if search_space.var_discrete[name]:
+                    random_points[:, i] = np.round(random_points[:, i])
+            sample_points.extend(list(random_points))
 
-        return sample_points
+        return np.array(sample_points)[:self.init_num]
     
     def negative_spearman_correlation(self, metadata, metadata_info, p=2):
         """

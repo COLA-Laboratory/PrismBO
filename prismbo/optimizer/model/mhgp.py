@@ -95,15 +95,6 @@ class MHGP(Model):
 
         return residuals
 
-    def _update_meta_data(self, model):
-        """Cache the meta data after meta training."""
-        self.source_models.append(model)
-        self._metadata.append({'X': self._X, 'Y': self._Y})
-
-
-    def meta_update(self):
-        self._update_meta_data(self.target_model)
-
     def _meta_fit_single_model(
         self,
         X : np.ndarray,
@@ -145,8 +136,7 @@ class MHGP(Model):
 
     def meta_fit(
         self,
-        source_X : List[np.ndarray],
-        source_Y : List[np.ndarray],
+        metadata : Dict,
         optimize: Union[bool, Sequence[bool]] = True,
     ):
         """Train the source GPs on the given source data.
@@ -157,21 +147,24 @@ class MHGP(Model):
                 list.
             optimize: Switch to run hyperparameter optimization.
         """
-        assert isinstance(optimize, bool) or isinstance(optimize, list)
-        if isinstance(optimize, list):
-            assert len(source_X) == len(optimize)
-        optimize_flag = copy.copy(optimize)
-
-        if isinstance(optimize_flag, bool):
-            optimize_flag = [optimize_flag] * len(source_X)
-
+        source_X = []
+        source_Y = []
+        new_keys = [k for k in metadata.keys() if k not in self._metadata]
+        if not new_keys:
+            return
+        for key in new_keys:
+            source_X.append(metadata[key]['X'])
+            source_Y.append(metadata[key]['Y'])
+            self._metadata[key] = metadata[key]
+                
         for i in range(len(source_X)):
             new_gp = self._meta_fit_single_model(
                 source_X[i],
                 source_Y[i],
-                optimize=optimize_flag[i],
+                optimize=optimize,
             )
-            self._update_meta_data(new_gp)
+
+            self.source_models.append(new_gp)
 
 
 

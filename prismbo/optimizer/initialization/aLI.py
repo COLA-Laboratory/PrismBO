@@ -26,8 +26,8 @@ class LearningInitialization(Sampler):
         gp_models = {}
         for k, v in metadata.items():
             # Extract X and Y values
-            X = np.array([[point[name] for name in search_space.variables_order] for point in v])
-            Y = np.array([point['f1'] for point in v]).reshape(-1, 1)
+            X = metadata[k]['X']
+            Y = metadata[k]['Y']
             
             # Create and fit GP model
             kernel = GPy.kern.RBF(input_dim=len(search_space.variables_order))

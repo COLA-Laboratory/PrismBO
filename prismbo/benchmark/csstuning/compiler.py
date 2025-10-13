@@ -57,7 +57,7 @@ class GCCTuning(NonTabularProblem):
     def get_objectives(self) -> dict:
         return {
             
-            "execution_time": "minimize",
+            "f1": "minimize",
             # "compilation_time": "minimize",
             # "file_size": "minimize",
             # "maxrss": "minimize",
@@ -130,7 +130,7 @@ class LLVMTuning(NonTabularProblem):
     
     def get_objectives(self) -> dict:
         return {
-            "execution_time": "minimize",
+            "f1": "minimize",
             # "compilation_time": "minimize",
             # "file_size": "minimize",
         }

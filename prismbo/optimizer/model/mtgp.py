@@ -72,6 +72,7 @@ class MTGP(GP):
         self.n_features = None
         self.predict_id = 0
 
+        self._metadata = {}
         self._metadata_x = []
         self._metadata_y = []
 
@@ -79,20 +80,19 @@ class MTGP(GP):
 
     def meta_fit(
         self,
-        source_X : List[np.ndarray],
-        source_Y : List[np.ndarray],
+        metadata : Dict,
         **kwargs,
     ):
-        data_X = copy.deepcopy(source_X)
-        data_Y = copy.deepcopy(source_Y)
-        self.n_sources = len(data_X)
+        new_keys = [k for k in metadata.keys() if k not in self._metadata]
+        if not new_keys:
+            return
+        for key in new_keys:
+            self._metadata_x.append(metadata[key]['X'])
+            self._metadata_y.append(metadata[key]['Y'])
+            self._metadata[key] = metadata[key]
+                
+        self.n_sources = len(self._metadata_x)
 
-        # create list of input/observed values from source data
-        # for i in range(self.n_sources):
-        #     self._metadata_x = self._metadata_x + data_X
-        #     self._metadata_y = self._metadata_y + data_Y
-        self._metadata_x = data_X
-        self._metadata_y = data_Y
         self.n_features = self._metadata_x[0].shape[-1]
 
     def fit(

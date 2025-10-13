@@ -14,6 +14,9 @@ from prismbo.benchmark.instantiate_problems import InstantiateProblems
 from prismbo.datamanager.manager import Database, DataManager
 from prismbo.optimizer.construct_optimizer import (ConstructOptimizer,
                                                     ConstructSelector)
+from prismbo.space.search_space import SearchSpace
+from prismbo.space.variable import *
+
 from prismbo.datamanager.bnf import parse_task_from_string
 from prismbo.utils.log import logger
 from prismbo.analysis.mds import FootPrint
@@ -276,18 +279,29 @@ class Services:
    
     def construct_dataset_info(self, task, config, seed):
         dataset_info = {}
-        dataset_info["variables"] = [
-            {"name": var.name, "type": var.type, "range": var.range}
-            for var_name, var in task.configuration_space.get_design_variables().items()
-        ]
+        variables = []
+        fidelities = []
+        for var_name, var in task.configuration_space.get_design_variables().items():
+            if var.type == 'continuous':
+                variables.append({"name": var.name, "type": var.type, "range": var.range})
+            elif var.type == 'categorical':
+                variables.append({"name": var.name, "type": var.type, "range": var.categories})
+            elif var.type == 'integer':
+                variables.append({"name": var.name, "type": var.type, "range": var.range})
+        dataset_info["variables"] = variables
+        
         dataset_info["objectives"] = [
             {"name": name, "type": type}
             for name, type in task.get_objectives().items()
         ]
-        dataset_info["fidelities"] = [
-            {"name": var.name, "type": var.type, "range": var.range}
-            for var_name, var in task.fidelity_space.get_fidelity_range().items()
-        ]
+        for var_name, var in task.fidelity_space.get_fidelity_range().items():
+            if var.type == 'continuous':
+                fidelities.append({"name": var.name, "type": var.type, "range": var.range})
+            elif var.type == 'categorical':
+                fidelities.append({"name": var.name, "type": var.type, "range": var.categories})
+            elif var.type == 'integer':
+                fidelities.append({"name": var.name, "type": var.type, "range": var.range})
+        dataset_info["fidelities"] = fidelities
         
         meta_features = parse_task_from_string(config.get('experimentDescription', ''))
         # Simplify dataset name construction
@@ -348,6 +362,10 @@ class Services:
         return autoselect
     
     def auto_get_data(self, task_name, task_info):
+        
+        # [optimizer.search_space.map_from_design_space(i) for i in metadata['CSSTuning_GCC_w0_s0_1760262284']]
+        
+        
         datasets_list = list(self.data_manager.search_similar_datasets(task_info))
         if len(datasets_list):
             metadata = {}
@@ -359,6 +377,19 @@ class Services:
                 if len(data) > 0:
                     metadata[dataset_name] = data
                     metadata_info[dataset_name] = self.data_manager.db.query_dataset_info(dataset_name)
+                    variables = []
+                    for var in metadata_info[dataset_name]['variables']:
+                        if var['type'] == 'continuous':
+                            variables.append(Continuous(var['name'], var['range']))
+                        elif var['type'] == 'categorical':
+                            variables.append(Categorical(var['name'], var['range']))
+                        elif var['type'] == 'integer':
+                            variables.append(Integer(var['name'], var['range']))
+                    search_space = SearchSpace(variables)
+                    X =  np.array([search_space.map_from_design_space(i) for i in metadata[dataset_name]])
+                    objectives = [obj['name'] for obj in metadata_info[dataset_name]['objectives']]
+                    Y = np.array([[data[obj] for obj in objectives] for data in metadata[dataset_name]])
+                    metadata[dataset_name] = {'X': X, 'Y': Y}
             return metadata, metadata_info
         else:
             return {}, {}
@@ -479,6 +510,7 @@ class Services:
                     else:
                         print("No metadata used in meta-fit.")
                 optimizer.meta_fit(metadata, metadata_info) 
+
                 
                 cur_iter = 0
                 self.update_process_info(pid, {'iteration': cur_iter + 1})
@@ -509,7 +541,7 @@ class Services:
                     self.update_process_info(pid, {'progress': 100 * (task_set.get_cur_budget() - task_set.get_rest_budget()) / task_set.get_cur_budget()})
                     logger.info(f"PID {pid}: Seed {seed}, Task {task_set.get_curname()}, Iteration {self.process_info[pid]['iteration']}")
                 task_set.roll()
-                # optimizer.meta_observe({'X':optimizer._X, 'Y':optimizer._Y}, optimizer.search_space)
+
                 optimizer.reload_model(model_registry[configurations['optimizer']['Model']['type']](config = configurations['optimizer']['Model']['Parameters']))
                 optimizer.reload_acf(acf_registry[configurations['optimizer']['AcquisitionFunction']['type']](config = configurations['optimizer']['AcquisitionFunction']['Parameters']))
                 

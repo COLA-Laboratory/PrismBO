@@ -23,6 +23,7 @@ class BO(OptimizerBase):
         super(BO, self).__init__(config=config)
         self._X = np.empty((0,))  # Initializes an empty ndarray for input vectors
         self._Y = np.empty((0,))
+        self.metadata = {}
         self.config = config
         self.search_space = None
         
@@ -77,14 +78,12 @@ class BO(OptimizerBase):
     
     def meta_fit(self, metadata = None, metadata_info = None):
         if metadata:
-            source_X = []
-            source_Y = []
-            for key, datasets in metadata.items():
-                data_info = metadata_info[key]
-                source_X.append(np.array([[data[var['name']] for var in data_info['variables']] for data in datasets]))
-                source_Y.append(np.array([[data[var['name']] for var in data_info['objectives']] for data in datasets]))
-                
-            self.Model.meta_fit(source_X, source_Y)
+            new_keys = [k for k in metadata.keys() if k not in self.metadata]
+            if not new_keys:
+                return
+            for key in new_keys:
+                self.metadata[key] = metadata[key]
+            self.Model.meta_fit(self.metadata)
     
     def fit(self):
 

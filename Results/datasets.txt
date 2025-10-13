@@ -1,3 +1,0 @@
-Experiment: exp_1
-Ackley_w0_s0_1759682023
------

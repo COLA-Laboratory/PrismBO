@@ -60,7 +60,7 @@ class MySQLTuning(NonTabularProblem):
     def get_objectives(self) -> dict:
         return {
             # "latency": "minimize",
-            "throughput": "maximize",
+            "f1": "minimize",
         }
         
     def get_problem_type(self):

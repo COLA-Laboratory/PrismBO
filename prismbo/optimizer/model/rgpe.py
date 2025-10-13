@@ -120,29 +120,28 @@ class RGPE(Model):
         return new_model
     
     def meta_fit(self,
-                source_X : List[np.ndarray],
-                source_Y : List[np.ndarray],
+                metadata : Dict,
                 optimize: Union[bool, Sequence[bool]] = True):
         # metadata, _ = SourceSelection.the_k_nearest(source_datasets)
-        self._metadata = {'X': source_X, 'Y':source_Y}
-        self._source_gps = {}
+        source_X = []
+        source_Y = []
+        new_keys = [k for k in metadata.keys() if k not in self._metadata]
+        if not new_keys:
+            return
+        for key in new_keys:
+            source_X.append(metadata[key]['X'])
+            source_Y.append(metadata[key]['Y'])
+            self._metadata[key] = metadata[key]
         
-        
-        assert isinstance(optimize, bool) or isinstance(optimize, list)
-        if isinstance(optimize, list):
-            assert len(source_X) == len(optimize)
-        optimize_flag = copy.copy(optimize)
-
-        if isinstance(optimize_flag, bool):
-            optimize_flag = [optimize_flag] * len(source_X)
+        len_source_gps = len(self._source_gps)
         
         for i in range(len(source_X)):
             new_gp = self._meta_fit_single_model(
                 source_X[i],
                 source_Y[i],
-                optimize=optimize_flag[i],
+                optimize=optimize,
             )
-            self._source_gps[i] = new_gp
+            self._source_gps[i+len_source_gps] = new_gp
 
         self._calculate_weights()
 

@@ -111,23 +111,19 @@ class HyperGP(Model):
 
 
     def meta_fit(self,
-                source_X : List[np.ndarray],
-                source_Y : List[np.ndarray],
-                optimize: Union[bool, Sequence[bool]] = True):
+            metadata : Dict,
+            optimize: Union[bool, Sequence[bool]] = True):
         # metadata, _ = SourceSelection.the_k_nearest(source_datasets)
-        self._metadata = {'X': source_X, 'Y':source_Y}
-        n_metadata = len(source_X)
+        self._meta_data = metadata
         train_data = {}
-        
-        for dataset_id, data in enumerate(source_X):
-            x = jax.numpy.array(data)
-            y = jax.numpy.array(source_Y[dataset_id])
-            dataset =  SubDataset(x, y)
 
-            train_data[dataset_id] = {'X':source_X[dataset_id], 'y':source_Y[dataset_id]}
+        for key in metadata.keys():
+            X = jax.numpy.array(metadata[key]['X'])
+            Y = jax.numpy.array(metadata[key]['Y'])
+            dataset =  SubDataset(X, Y)
+            train_data[key] = {'X':X, 'Y':Y}
             self.model.update_sub_dataset(
-                dataset, sub_dataset_key=str(dataset_id), is_append=False)
-        self._meta_data = train_data
+                dataset, sub_dataset_key=str(key), is_append=False)
         
         key, subkey = jax.random.split(self.key)
 
