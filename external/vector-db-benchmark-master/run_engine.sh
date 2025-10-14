@@ -21,11 +21,11 @@ function run_exp() {
     DATASETS=$3
     MONITOR_PATH=$(echo "$ENGINE_NAME" | sed -e 's/[^A-Za-z0-9._-]/_/g')
     nohup bash -c "cd $SOURCE_DIR/monitoring && rm -f docker.stats.jsonl && bash monitor_docker.sh" > /dev/null 2>&1 &
-    cd $SOURCE_DIR/engine/servers/$SERVER_PATH ; docker-compose down > /dev/null; docker-compose up -d > /dev/null
+    cd $SOURCE_DIR/engine/servers/$SERVER_PATH ; docker compose down > /dev/null; docker compose up -d > /dev/null
     sleep 30
-    python3.11 $SOURCE_DIR/run.py --engines "$ENGINE_NAME" --datasets "${DATASETS}" --host "$SERVER_HOST" > /dev/null
+    /home/test/anaconda3/envs/prismbo/bin/python $SOURCE_DIR/run.py --engines "$ENGINE_NAME" --datasets "${DATASETS}" --host "$SERVER_HOST" > /dev/null
     # exit
-    cd $SOURCE_DIR/engine/servers/$SERVER_PATH ; docker-compose down > /dev/null
+    cd $SOURCE_DIR/engine/servers/$SERVER_PATH ; docker compose down > /dev/null
     cd $SOURCE_DIR/monitoring && mkdir -p results && sudo mv docker.stats.jsonl ./results/${MONITOR_PATH}-docker.stats.jsonl
 }
 
