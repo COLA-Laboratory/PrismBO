@@ -22,7 +22,7 @@ sdist/
 var/
 wheels/
 demo/
-external/
+# external/
 results/
 Results/
 *.egg-info/
