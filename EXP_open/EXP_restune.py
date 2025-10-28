@@ -290,12 +290,9 @@ def propose_next_botorch(X_np, Y_np):
             mll.train()
             fit_gpytorch_model(mll)
     except Exception as e:
-        # 如果拟合失败，退回随机选择
-        # print("GP fit error, fallback to random:", e)
         d = X_np.shape[1]
         return np.random.rand(d).astype(np.float64)
 
-    # 设定 best_f（用于最小化问题）
     try:
         best_f = train_y.min().item()
     except Exception:
@@ -316,16 +313,12 @@ def propose_next_botorch(X_np, Y_np):
             options={"batch_limit": 5, "maxiter": 200},
         )
         new_x = candidates.detach().cpu().numpy().reshape(-1)
-        # clip 防止数值溢出
         new_x = np.clip(new_x, 0.0, 1.0).astype(np.float64)
         return new_x
     except Exception as e:
-        # 优化失败则退化为随机搜索（但尝试避免已存在点）
-        # print("Acquisition optimization failed, fallback to random:", e)
         d = X_np.shape[1]
         for _ in range(10):
             cand = np.random.rand(d)
-            # 若不与已有点重复则返回
             if not any(np.allclose(cand, xx) for xx in X_np):
                 return cand.astype(np.float64)
         return cand.astype(np.float64)
@@ -470,7 +463,6 @@ if __name__ == '__main__':
                 
                 print(f"Saved result to {filepath}")
                 
-                # 更新workload_list，将当前优化的结果添加到workload_list中
                 workload_key = f"{task_name}_workload_{workload}_seed_{seed}"
                 workload_list[workload_key] = {
                     'workload_id': workload_key,
@@ -501,7 +493,6 @@ if __name__ == '__main__':
                 }
                 print(f"[Workload Update] Added {workload_key} to workload_list")
                 
-                # 每次优化完成后立即保存workload_list
                 workload_list_file = f"{results_dir}/workload_list.json"
                 with open(workload_list_file, 'w') as f:
                     json.dump(workload_list, f, indent=2)

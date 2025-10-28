@@ -4,22 +4,24 @@ import json
 import os
 from datetime import datetime
 import time
-from prismbo.benchmark.hpo import * 
+# from prismbo.benchmark.hpo import * 
 from prismbo.benchmark.csstuning.compiler import LLVMTuning, GCCTuning
 from prismbo.benchmark.csstuning.dbms import MySQLTuning
+from prismbo.benchmark.csstuning.vdbms.vdbms import VDBMSTuning
 from prismbo.benchmark.synthetic.singleobj import *
 
 task_class_dict = {
     'Ackley': Ackley,
     'Rastrigin': Rastrigin,
     'Rosenbrock': Rosenbrock,
-    'XGB': XGBoostBenchmark,
-    'HPO_PINN': HPO_PINN,
-    'HPO_ResNet18': HPO_ResNet18,
-    'HPO_ResNet32': HPO_ResNet32,
+    # 'XGB': XGBoostBenchmark,
+    # 'HPO_PINN': HPO_PINN,
+    # 'HPO_ResNet18': HPO_ResNet18,
+    # 'HPO_ResNet32': HPO_ResNet32,
     'CSSTuning_GCC': GCCTuning,
     'CSSTuning_LLVM': LLVMTuning,
     'CSSTuning_MySQL': MySQLTuning,
+    'CSSTuning_VDBMS': VDBMSTuning,
 }
 
 
