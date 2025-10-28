@@ -1,16 +1,24 @@
+import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import cm
 
 
-def plot2D(X, Y, c='black', ls='', marker='o', fillstyle=None, label=None, ax=None, file=None, show=False,
-           show_legend=False, bounds=None,title=None,disconnect=None):
+def plot2D(model, X, Y, range_x, c='blue', ls='', marker='o', fillstyle=None, label=None, ax=None, file=None, show=False, show_legend=False, bounds=None,title=None):
     if ax is None:
         _, ax = plt.subplots(1, 1)
-    if disconnect is None:
-        ax.plot(X, Y, c=c, ls=ls, marker=marker, label=label,fillstyle=fillstyle)
-    else:
-        for l in disconnect:
-            ax.plot(X[l], Y[l], c=c, ls=ls, marker=marker, label=label, fillstyle=fillstyle)
+    sampled_X = np.linspace(range_x[0], range_x[1], 1000)[:, None]
+    pred_mean, pred_var = model.predict(sampled_X)
+    pred_mean = np.squeeze(pred_mean)
+    pred_std = np.sqrt(np.squeeze(pred_var))
+    ax.plot(sampled_X, pred_mean, c=c, ls=ls, label=label)
+    ax.fill_between(
+        sampled_X.flatten(), 
+        pred_mean - pred_std, 
+        pred_mean + pred_std, 
+        color=c, alpha=0.2
+    )
+    
+    ax.plot(X, Y, c=c, ls=ls, marker=marker, label=label,fillstyle=fillstyle)
     ax.set_xlabel('$f_1(\mathbf{x})$', fontsize=13)
     ax.set_ylabel('$f_2(\mathbf{x})$', fontsize=13)
     ax.tick_params(axis='both', labelsize=13)

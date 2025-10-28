@@ -1,7 +1,7 @@
 
 import copy
 import numpy as np
-from typing import Tuple, List
+from typing import Tuple, List, Dict, Union, Sequence
 from sklearn.preprocessing import StandardScaler
 
 from GPy.models import GPRegression
@@ -72,9 +72,8 @@ class GP(Model):
 
     def meta_fit(
         self,
-        source_X : List[np.ndarray],
-        source_Y : List[np.ndarray],
-        **kwargs,
+        metadata : Dict,
+        optimize: Union[bool, Sequence[bool]] = True,
     ):
         pass
 

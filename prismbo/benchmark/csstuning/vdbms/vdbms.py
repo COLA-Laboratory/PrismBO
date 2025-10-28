@@ -244,7 +244,7 @@ class RealEnv:
 @problem_registry.register("CSSTuning_VDBMS")
 class VDBMSTuning(NonTabularProblem):
     problem_type = 'vdbms'
-    workloads = ['glove-25-angular', 'glove-100-angular', 'deep-image-96-angular', 'gist-960-euclidean', 'gist-960-angula', 'laion-small-clip', 'dbpedia-openai-1M-1536-angular', 'dbpedia-openai-100K-1536-angular', 'msmarco-sparse-100K', 'msmarco-sparse-1M']
+    workloads = ['glove-25-angular', 'glove-100-angular', 'deep-image-96-angular', 'gist-960-euclidean', 'gist-960-angula', 'laion-small-clip', 'dbpedia-openai-1M-1536-angular', 'dbpedia-openai-100K-1536-angular']
     num_variables = 16
     num_objectives = 1
     fidelity = None

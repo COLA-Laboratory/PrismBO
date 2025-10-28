@@ -12,7 +12,7 @@ from prismbo.space.variable import *
 class GCCTuning(NonTabularProblem):
     problem_type = 'compiler'
     workloads = GCCBenchmark.AVAILABLE_WORKLOADS
-    num_variables = 5
+    num_variables = 20
     num_objectives = 1
     fidelity = None
     
@@ -37,7 +37,26 @@ class GCCTuning(NonTabularProblem):
     def get_configuration_space(self):
         variables = []
         tuning_knobs = {
-            "ipa-cp", "ipa-icf", "devirtualize", "inline-functions-called-once", "tree-pta"
+            "inline-functions-called-once",
+            "inline-small-functions",
+            "devirtualize",
+            "ipa-cp",
+            "ipa-icf",
+            "ipa-sra",
+            "tree-dce",
+            "tree-dse",
+            "tree-fre",
+            "tree-ccp",
+            "tree-ter",
+            "tree-sra",
+            "move-loop-invariants",
+            "code-hoisting",
+            "reorder-blocks",
+            "gcse",
+            "cprop-registers",
+            "ssa-phiopt",
+            "if-conversion",
+            "expensive-optimizations"
         }
         for knob_name in tuning_knobs:
             knob_details = self.knobs[knob_name]
