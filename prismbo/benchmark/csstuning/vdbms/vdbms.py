@@ -323,7 +323,7 @@ class VDBMSTuning(NonTabularProblem):
             print(e)
             return {'f1': 1000000}
         
-        return {'f1': float(results[0][0])}
+        return {'f1': float(results[0][1])}
 
 if __name__ == '__main__':
     vdbms = VDBMSTuning(task_name='vdbms', budget_type='time', budget=1000, seed=0, workload=0, description='vdbms')

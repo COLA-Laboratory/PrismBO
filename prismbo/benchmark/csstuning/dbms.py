@@ -33,8 +33,19 @@ class MySQLTuning(NonTabularProblem):
             "innodb_buffer_pool_size",
             "innodb_flush_log_at_trx_commit",
             "innodb_flush_neighbors",
+            "innodb_adaptive_flushing",
+            "innodb_file_per_table",
+            "innodb_change_buffer_max_size",
+            "innodb_flush_log_at_timeout",
             "innodb_doublewrite",
-            "innodb_io_capacity"
+            "innodb_compression_level",
+            "innodb_adaptive_hash_index_parts",
+            "binlog_cache_size",
+            "back_log",
+            "connect_timeout",
+            "bulk_insert_buffer_size",
+            "group_concat_max_len",
+            "host_cache_size"
         }
         for knob_name in tuning_knobs:
             knob_details = self.knobs[knob_name]
