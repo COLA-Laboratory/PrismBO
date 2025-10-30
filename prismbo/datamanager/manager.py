@@ -1,5 +1,6 @@
 # import cProfile
 # import pstats
+import openai
 
 from prismbo.datamanager.database import Database
 from prismbo.datamanager.lsh import LSHCache
@@ -19,7 +20,7 @@ class DataManager:
         return cls._instance
     
     def __init__(
-        self, db=None, num_hashes=100, char_ngram=2, num_bands=50, random_state=12345
+        self, db=None, num_hashes=1000, char_ngram=2, num_bands=100, random_state=12345
     ):
         if not self._initialized:
             if db is None:
@@ -40,7 +41,36 @@ class DataManager:
 
         for dataset in datasets:
             dataset_info = self.db.query_dataset_info(dataset)
+            
             self._add_lsh_vector(dataset, dataset_info)
+            
+    # def _construct_embedding_vector(self, dataset_info):
+    #     num_variables = str(dataset_info.get("num_variables", len(dataset_info["variables"])))
+    #     num_objectives = str(dataset_info.get("num_objectives", len(dataset_info["objectives"])))
+    #     description = dataset_info.get("additional_config", {}).get("desc", "")
+    #     variables = dataset_info.get("variables", [])
+    #     variable_names = ",".join([var.get("name", "") for var in variables])
+    #     task_name = dataset_info.get("additional_config", {}).get("problem_name", "")
+    #     text_to_embed = (
+    #         f"{task_name}; "
+    #         f"{description}; "
+    #         f"{variable_names};"
+    #     )
+
+    #     client = openai.OpenAI(
+    #         api_key="sk-RkYVrUuk7H05cHtO264f5b155b1b41FdB6D0C3C710704e9f", 
+    #         base_url="https://aihubmix.com/v1"
+    #     )
+    #     response = client.embeddings.create(
+    #         input=text_to_embed,
+    #         model="text-embedding-3-small"  # gpt-40-mini embedding model
+    #     )
+        
+    #     return response.data[0].embedding
+
+
+
+
 
     def _add_lsh_vector(self, dataset_name, dataset_info):
         vector = self._construct_vector(dataset_info)
@@ -57,7 +87,23 @@ class DataManager:
             variable_names = "".join([var["name"] for var in variables])
             
             task_name = dataset_info["additional_config"]['problem_name']
-            return (task_name, description, variable_names, num_variables, num_objectives)
+            text_to_embed = (
+            f"{task_name}; "
+            f"{description}; "
+            f"{variable_names};"
+            )
+
+            client = openai.OpenAI(
+                api_key="sk-RkYVrUuk7H05cHtO264f5b155b1b41FdB6D0C3C710704e9f", 
+                base_url="https://aihubmix.com/v1"
+            )
+            response = client.embeddings.create(
+                input=text_to_embed,
+                model="text-embedding-3-small"
+            )
+            
+    
+            return (response.data[0].embedding, num_variables, num_objectives)
         except KeyError:
             logger.error(
                 f"""
@@ -90,7 +136,6 @@ class DataManager:
 
     def create_dataset(self, dataset_name, dataset_info, overwrite=True):
         self.db.create_table(dataset_name, dataset_info, overwrite)
-        
         dataset_info_extended = self.db.query_dataset_info(dataset_name)
         self._add_lsh_vector(dataset_name, dataset_info_extended)
 

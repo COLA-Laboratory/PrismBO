@@ -12,7 +12,7 @@ from prismbo.space.variable import *
 class MySQLTuning(NonTabularProblem):
     problem_type = 'dbms'
     workloads = MySQLBenchmark.AVAILABLE_WORKLOADS
-    num_variables = 5
+    num_variables = 16
     num_objectives = 1
     fidelity = None
     

@@ -108,7 +108,8 @@ class Configer:
                 'remote': config.get('remote', False),
                 'server_url': config.get('server_url', ''),
                 'experimentName': config.get('experimentName', ''),
-                'experimentDescription': config.get('experimentDescription', '')
+                'experimentDescription': config.get('experimentDescription', ''),
+                'verbose': config.get('verbose', False)
             }
     
     def set_tasks(self, problem_info):
