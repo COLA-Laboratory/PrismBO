@@ -183,7 +183,7 @@ if __name__ == "__main__":
     # Run experiments
     all_results = {}
     ini_num = 3
-    max_lives = 10
+    max_lives = 110
     inf = 1e8
 
     for task_info in config['tasks']:
